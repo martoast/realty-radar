@@ -68,42 +68,68 @@ const nuxtApp = useNuxtApp();
 const mapboxgl = nuxtApp.mapboxgl;
 
 const searchParams = reactive({
+  // Address and location parameters
   address: null,
-  state: null,
+  house: null,
+  street: null,
   city: null,
-  postalCode: null,
+  state: null,
+  zip: null,
+  county: null,
+  latitude: null,
+  longitude: null,
   radius: 2,
-  mlsActive: true,
-  lat: null,
-  lng: null,
+
+  // Property characteristics
+  property_type: null,
   beds_min: null,
   beds_max: null,
   baths_min: null,
   baths_max: null,
-
-  // New fields for advanced filters
-  sqft_min: null,
-  sqft_max: null,
+  building_size_min: null,
+  building_size_max: null,
   lot_size_min: null,
   lot_size_max: null,
   year_built_min: null,
   year_built_max: null,
-  foreclosure_status: null,
-  recording_date: null,
-  active_auction: false,
+
+  // MLS status
+  mls_active: true,
+  mls_pending: false,
+  mls_cancelled: false,
+  mls_days_on_market_min: null,
+  mls_days_on_market_max: null,
+  mls_listing_price_min: null,
+  mls_listing_price_max: null,
+
+  // Foreclosure and auction
+  foreclosure: false,
+  pre_foreclosure: false,
+  auction: false,
+  reo: false,
+  foreclosure_date_min: null,
+  foreclosure_date_max: null,
   auction_date_min: null,
   auction_date_max: null,
-  exclude_foreclosures: false,
-  bank_owned: false,
-  owner_type: [],
-  purchase_date_min: null,
-  purchase_date_max: null,
+
+  // Ownership and occupancy
+  absentee_owner: false,
+  corporate_owned: false,
+  out_of_state_owner: false,
+  vacant: false,
+  last_sale_date_min: null,
+  last_sale_date_max: null,
+  last_sale_price_min: null,
+  last_sale_price_max: null,
   years_owned_min: null,
   years_owned_max: null,
-  purchase_price_min: null,
-  purchase_price_max: null,
-  absentee_owner: [],
-  occupancy: []
+
+  // Additional filters
+  equity: null,
+  estimated_value_min: null,
+  estimated_value_max: null,
+  estimated_equity_min: null,
+  estimated_equity_max: null,
 });
 
 let map = null;
@@ -296,15 +322,16 @@ const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
 };
 
 const handleUpdateAddress = (data) => {
-  const [streetAddress, city, stateZip] = data.address.split(', ');
-  const [state, postalCode] = stateZip.split(' ');
+  const [street, city, stateZip] = data.address.split(', ');
+  const [state, zip] = stateZip.split(' ');
   
-  searchParams.address = streetAddress;
-  searchParams.state = state;
+  searchParams.address = data.address;
+  searchParams.street = street;
   searchParams.city = city;
-  searchParams.postalCode = postalCode;
-  searchParams.lng = data.longitude;
-  searchParams.lat = data.latitude;
+  searchParams.state = state;
+  searchParams.zip = zip;
+  searchParams.longitude = data.longitude;
+  searchParams.latitude = data.latitude;
   
   updateMap(data.longitude, data.latitude);
 };
@@ -343,20 +370,18 @@ const handleBedsAndBathsUpdate = (newValue) => {
 }
 
 const handleMarketStatusUpdate = (newStatus) => {
-  searchParams.marketStatus = newStatus
-  console.log(searchParams)
-}
+  Object.assign(searchParams, newStatus);
+  console.log('Updated searchParams:', searchParams);
+};
 
 const handleAdvancedFiltersUpdate = (newFilters) => {
-  // Update all advanced filter fields
   Object.keys(newFilters).forEach(key => {
     if (key in searchParams) {
       searchParams[key] = newFilters[key];
     }
   });
-
   console.log('Updated searchParams:', searchParams);
-}
+};
 
 onMounted(() => {
   initMap();
