@@ -1,86 +1,63 @@
 <template>
-    <div class="h-screen flex flex-col xl:flex-row">
-      <div class="xl:w-3/4 lg:order-2">
-        <div id="map" class="h-[40vh] lg:h-screen w-full"></div>
-      </div>
-      <div class="xl:w-1/4 lg:order-1 h-screen overflow-y-auto px-3 py-6">
-        <div class="space-y-6">
-          <label for="address" class="block text-sm font-medium leading-6 text-gray-900 pb-3">Property Search:</label>
-          <custom-places-auto-complete @updateAddress="handleUpdateAddress" />
-          <label for="radius" class="block text-sm font-medium leading-6 text-gray-900">
-            Search Radius: {{ searchParams.radius }} miles
-          </label>
-          <input
-            v-model="searchParams.radius"
-            type="range"
-            min="1"
-            max="10"
-            step="1"
-            class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary dark:bg-gray-300"
-          />
-          <div class="flex items-center">
-            <input
-              v-model="searchParams.mlsActive"
-              type="checkbox"
-              id="mlsActive"
-              class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"
-            />
-            <label for="mlsActive" class="ml-2 block text-sm text-gray-900">
-              MLS Active
-            </label>
+    <div class="h-screen flex flex-col">
+      <div class="p-4 bg-white border-b">
+        <div class="flex flex-wrap items-center gap-4 max-w-7xl mx-auto">
+
+          <div class="flex-grow min-w-[300px] relative w-40">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18" fill="none" class="text-gray-400">
+                <path d="M16.5 16.5L11.5001 11.5M13.1667 7.33333C13.1667 10.555 10.555 13.1667 7.33333 13.1667C4.11167 13.1667 1.5 10.555 1.5 7.33333C1.5 4.11167 4.11167 1.5 7.33333 1.5C10.555 1.5 13.1667 4.11167 13.1667 7.33333Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path>
+              </svg>
+            </span>
+            <custom-places-auto-complete @updateAddress="handleUpdateAddress" />
           </div>
-          <button
+          
+          <div class="w-40">
+            <MarketStatusDropdown @update:marketStatus="handleMarketStatusUpdate"/>
+          </div>
+          
+          <div class="w-40">
+            <BedsAndBathsDropdown @update:bedsAndBaths="handleBedsAndBathsUpdate"/>
+          </div>
+
+          <div class="w-40">
+            <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" />
+          </div>
+
+          
+
+          <div class="w-40">
+            <button
             @click="searchProperties"
             :disabled="isLoading"
-            class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-secondary"
+            class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <span v-if="!isLoading">Search Properties</span>
             <span v-else>Searching...</span>
           </button>
-        </div>
-        <div v-if="error" class="mt-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
-          {{ error }}
-        </div>
-        <div v-if="searchResults" class="mt-8">
-          <h2 class="text-xl font-semibold mb-4">Search Results ({{ searchResults.resultCount }})</h2>
-          <div class="space-y-4">
-            <div v-for="property in paginatedResults" :key="property.id" class="border rounded-lg shadow-md p-4">
-              <h3 class="text-lg font-semibold mb-2">{{ property.address.address }}</h3>
-              <p class="text-gray-600 mb-2">{{ property.address.city }}, {{ property.address.state }} {{ property.address.zip }}</p>
-              <div class="grid grid-cols-2 gap-2 text-sm">
-                <p><span class="font-medium">Beds:</span> {{ property.bedrooms }}</p>
-                <p><span class="font-medium">Baths:</span> {{ property.bathrooms }}</p>
-                <p><span class="font-medium">Sq Ft:</span> {{ property.squareFeet }}</p>
-                <p><span class="font-medium">Year Built:</span> {{ property.yearBuilt }}</p>
-              </div>
-              <div class="mt-4">
-                <p class="text-lg font-bold text-indigo-600">${{ property.mlsListingPrice.toLocaleString() }}</p>
-                <p class="text-sm text-gray-500">Estimated Value: ${{ property.estimatedValue.toLocaleString() }}</p>
-              </div>
-            </div>
           </div>
-          <!-- Pagination controls -->
-          <div class="mt-4 flex justify-between items-center">
-            <button 
-              @click="currentPage--" 
-              :disabled="currentPage === 1"
-              class="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
-            >
-              Previous
-            </button>
-            <span>Page {{ currentPage }} of {{ totalPages }}</span>
-            <button 
-              @click="currentPage++" 
-              :disabled="currentPage === totalPages"
-              class="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
+
+          
+          
+          <button class="p-2 text-primary hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-primary">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M6.0587 5.99992C6.21543 5.55436 6.5248 5.17866 6.932 4.93934C7.3392 4.70002 7.81796 4.61254 8.28348 4.69239C8.749 4.77224 9.17124 5.01427 9.47542 5.3756C9.77959 5.73694 9.94607 6.19427 9.94536 6.66659C9.94536 7.99992 7.94536 8.66659 7.94536 8.66659M7.9987 11.3333H8.00536M14.6654 7.99992C14.6654 11.6818 11.6806 14.6666 7.9987 14.6666C4.3168 14.6666 1.33203 11.6818 1.33203 7.99992C1.33203 4.31802 4.3168 1.33325 7.9987 1.33325C11.6806 1.33325 14.6654 4.31802 14.6654 7.99992Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+            </svg>
+          </button>
         </div>
       </div>
+      <div id="map" class="flex-grow"></div>
+      <!-- Search Results Drawer -->
+    <SearchResultsDrawer
+      :is-open="drawerOpen"
+      :search-results="searchResults"
+      :current-page="currentPage"
+      :results-per-page="resultsPerPage"
+      @close="closeDrawer"
+      @update-page="updatePage"
+    />
     </div>
-</template>
+  </template>
   
 <script setup>
 
@@ -95,10 +72,38 @@ const searchParams = reactive({
   state: null,
   city: null,
   postalCode: null,
-  radius: 5,
+  radius: 2,
   mlsActive: true,
   lat: null,
-  lng: null
+  lng: null,
+  beds_min: null,
+  beds_max: null,
+  baths_min: null,
+  baths_max: null,
+
+  // New fields for advanced filters
+  sqft_min: null,
+  sqft_max: null,
+  lot_size_min: null,
+  lot_size_max: null,
+  year_built_min: null,
+  year_built_max: null,
+  foreclosure_status: null,
+  recording_date: null,
+  active_auction: false,
+  auction_date_min: null,
+  auction_date_max: null,
+  exclude_foreclosures: false,
+  bank_owned: false,
+  owner_type: [],
+  purchase_date_min: null,
+  purchase_date_max: null,
+  years_owned_min: null,
+  years_owned_max: null,
+  purchase_price_min: null,
+  purchase_price_max: null,
+  absentee_owner: [],
+  occupancy: []
 });
 
 let map = null;
@@ -112,6 +117,16 @@ const searchResults = ref(null);
 const currentPage = ref(1);
 const resultsPerPage = 5;
 
+const drawerOpen = ref(false);
+
+const closeDrawer = () => {
+  drawerOpen.value = false
+}
+
+const updatePage = (newPage) => {
+  currentPage.value = newPage
+}
+
 const searchProperties = async () => {
   isLoading.value = true;
   error.value = null;
@@ -120,6 +135,8 @@ const searchProperties = async () => {
       method: 'POST',
       body: searchParams
     });
+    drawerOpen.value = true // Open the drawer when results are available
+    currentPage.value = 1 // Reset to first page when new search is performed
     updatePropertyMarkers(); // This will now update based on paginatedResults
   } catch (err) {
     console.error('Error searching properties:', err);
@@ -313,6 +330,33 @@ watch(() => searchParams.radius, () => {
 watch([() => currentPage.value, paginatedResults], () => {
   updatePropertyMarkers();
 });
+
+const handleBedsAndBathsUpdate = (newValue) => {
+  // Handle the updated beds and baths values
+  
+  searchParams.beds_min = newValue.beds_min;
+  searchParams.beds_max = newValue.beds_max;
+
+  searchParams.baths_min = newValue.baths_min;
+  searchParams.baths_max = newValue.baths_max;
+  console.log(searchParams)
+}
+
+const handleMarketStatusUpdate = (newStatus) => {
+  searchParams.marketStatus = newStatus
+  console.log(searchParams)
+}
+
+const handleAdvancedFiltersUpdate = (newFilters) => {
+  // Update all advanced filter fields
+  Object.keys(newFilters).forEach(key => {
+    if (key in searchParams) {
+      searchParams[key] = newFilters[key];
+    }
+  });
+
+  console.log('Updated searchParams:', searchParams);
+}
 
 onMounted(() => {
   initMap();
