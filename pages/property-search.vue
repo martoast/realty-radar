@@ -9,7 +9,7 @@
                 <path d="M16.5 16.5L11.5001 11.5M13.1667 7.33333C13.1667 10.555 10.555 13.1667 7.33333 13.1667C4.11167 13.1667 1.5 10.555 1.5 7.33333C1.5 4.11167 4.11167 1.5 7.33333 1.5C10.555 1.5 13.1667 4.11167 13.1667 7.33333Z" stroke="currentColor" stroke-width="1.66667" stroke-linecap="round" stroke-linejoin="round"></path>
               </svg>
             </span>
-            <custom-places-auto-complete @updateAddress="handleUpdateAddress" />
+            <custom-places-auto-complete @updateAddress="handleUpdateAddress" :initialAddress="searchParams.address" />
           </div>
           
           <div class="w-40">
@@ -29,7 +29,7 @@
           <div class="w-40">
             <button
             @click="searchProperties"
-            :disabled="isLoading"
+            :disabled="isLoading || isFormEmpty"
             class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <span v-if="!isLoading">Search Properties</span>
@@ -61,6 +61,9 @@
   
 <script setup>
 
+const router = useRouter()
+const route = useRoute()
+
 const config = useRuntimeConfig();
 const accessToken = config.public.MAPBOX_API_TOKEN;
 
@@ -68,68 +71,13 @@ const nuxtApp = useNuxtApp();
 const mapboxgl = nuxtApp.mapboxgl;
 
 const searchParams = reactive({
-  // Address and location parameters
   address: null,
-  house: null,
   street: null,
   city: null,
   state: null,
   zip: null,
-  county: null,
   latitude: null,
-  longitude: null,
-  radius: 2,
-
-  // Property characteristics
-  property_type: null,
-  beds_min: null,
-  beds_max: null,
-  baths_min: null,
-  baths_max: null,
-  building_size_min: null,
-  building_size_max: null,
-  lot_size_min: null,
-  lot_size_max: null,
-  year_built_min: null,
-  year_built_max: null,
-
-  // MLS status
-  mls_active: true,
-  mls_pending: false,
-  mls_cancelled: false,
-  mls_days_on_market_min: null,
-  mls_days_on_market_max: null,
-  mls_listing_price_min: null,
-  mls_listing_price_max: null,
-
-  // Foreclosure and auction
-  foreclosure: false,
-  pre_foreclosure: false,
-  auction: false,
-  reo: false,
-  foreclosure_date_min: null,
-  foreclosure_date_max: null,
-  auction_date_min: null,
-  auction_date_max: null,
-
-  // Ownership and occupancy
-  absentee_owner: false,
-  corporate_owned: false,
-  out_of_state_owner: false,
-  vacant: false,
-  last_sale_date_min: null,
-  last_sale_date_max: null,
-  last_sale_price_min: null,
-  last_sale_price_max: null,
-  years_owned_min: null,
-  years_owned_max: null,
-
-  // Additional filters
-  equity: null,
-  estimated_value_min: null,
-  estimated_value_max: null,
-  estimated_equity_min: null,
-  estimated_equity_max: null,
+  longitude: null
 });
 
 let map = null;
@@ -152,6 +100,10 @@ const closeDrawer = () => {
 const updatePage = (newPage) => {
   currentPage.value = newPage
 }
+
+const isFormEmpty = computed(() => {
+  return Object.values(searchParams).every(value => value === null)
+})
 
 const searchProperties = async () => {
   isLoading.value = true;
@@ -383,8 +335,41 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
   console.log('Updated searchParams:', searchParams);
 };
 
+// Function to update URL query parameters
+const updateUrlParams = () => {
+  const query = {}
+  Object.entries(searchParams).forEach(([key, value]) => {
+    if (value !== null && value !== '') {
+      query[key] = value.toString()
+    }
+  })
+  router.push({ query })
+}
+
+  // Watch searchParams and update URL
+  watch(searchParams, updateUrlParams, { deep: true })
+
+  // Function to initialize search from URL params
+  const initializeFromUrl = () => {
+    Object.keys(route.query).forEach(key => {
+      if (key in searchParams) {
+        const value = route.query[key]
+        searchParams[key] = isNaN(value) ? value : Number(value)
+      }
+    })
+
+    if (searchParams.address && searchParams.latitude && searchParams.longitude) {
+      handleUpdateAddress({
+        address: searchParams.address,
+        latitude: searchParams.latitude,
+        longitude: searchParams.longitude
+      })
+    }
+  }
+
 onMounted(() => {
   initMap();
+  initializeFromUrl();
 });
 </script>
 

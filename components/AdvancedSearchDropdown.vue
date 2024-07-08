@@ -171,6 +171,23 @@
                 </div>
               </DisclosurePanel>
             </Disclosure>
+            <!-- Apply Button -->
+          <div class="px-4 py-2">
+            <button 
+              @click="applyFilter" 
+              :disabled="isFormEmpty"
+              class=" mb-4 flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+            >
+              Apply filters
+            </button>
+            <button 
+            @click="resetFilters"
+            :disabled="isFormEmpty"
+            class="flex w-full justify-center rounded-md bg-gray-200 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-700 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+          >
+            Reset
+          </button>
+          </div>
           </div>
         </MenuItems>
       </transition>
@@ -185,7 +202,7 @@
   
   const emit = defineEmits(['update:advancedFilters'])
   
-  const form = reactive({
+  const initialForm = {
     // Property Characteristics fields
     building_size_min: null,
     building_size_max: null,
@@ -193,7 +210,7 @@
     lot_size_max: null,
     year_built_min: null,
     year_built_max: null,
-  
+
     // Foreclosure & Auction fields
     foreclosure: false,
     pre_foreclosure: false,
@@ -201,7 +218,7 @@
     auction_date_min: null,
     auction_date_max: null,
     reo: false,
-  
+
     // Ownership & Occupancy fields
     last_sale_date_min: null,
     last_sale_date_max: null,
@@ -211,19 +228,23 @@
     last_sale_price_max: null,
     absentee_owner: false,
     vacant: false,
-  });
-  
-  watch(form, (newValue) => {
-    // Reset date ranges when checkboxes are unchecked
-    if (!newValue.foreclosure && !newValue.pre_foreclosure) {
-        newValue.foreclosure_date_min = null;
-        newValue.foreclosure_date_max = null;
-    }
-    if (!newValue.auction) {
-        newValue.auction_date_min = null;
-        newValue.auction_date_max = null;
-    }
-    emit('update:advancedFilters', newValue)
-    }, { deep: true })
+  };
+
+  const form = reactive({...initialForm});
+
+  const isFormEmpty = computed(() => {
+  return Object.values(form).every(value => value === null || value === '' || value === false)
+})
+
+  const applyFilter = () => {
+    emit('update:advancedFilters', {...form})
+  }
+    
+  const resetFilters = () => {
+    Object.keys(form).forEach(key => {
+      form[key] = initialForm[key];
+    });
+    emit('update:advancedFilters', {...form})
+  }
   
   </script>
