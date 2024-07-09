@@ -39,10 +39,9 @@ import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 const emit = defineEmits(['update:marketStatus'])
 
 const marketStatuses = [
-  { label: 'On market', value: { mls_active: true, mls_pending: false, mls_cancelled: false } },
-  { label: 'Off market', value: { mls_active: false, mls_pending: false, mls_cancelled: true } },
-  { label: 'Pending', value: { mls_active: false, mls_pending: true, mls_cancelled: false } },
-  { label: 'All', value: { mls_active: true, mls_pending: true, mls_cancelled: true } }
+  { label: 'On market', value: { mls_pending: false, mls_active: true} },
+  { label: 'Off market', value: { mls_pending: false, mls_active: false} },
+  { label: 'Pending', value: { mls_pending: true, mls_active: false} }
 ]
 
 const selectedStatus = ref({

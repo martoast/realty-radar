@@ -1,7 +1,7 @@
 <template>
     <Teleport to="body">
       <Transition name="slide">
-        <div v-if="isOpen" class="fixed inset-y-0 right-0 max-w-full flex">
+        <div v-if="isOpen" class="fixed inset-y-0 right-0 max-w-full flex z-50">
           <div class="w-screen max-w-md">
             <div class="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
               <div class="p-6">
@@ -21,12 +21,12 @@
                     <div class="grid grid-cols-2 gap-2 text-sm">
                       <p><span class="font-medium">Beds:</span> {{ property.bedrooms }}</p>
                       <p><span class="font-medium">Baths:</span> {{ property.bathrooms }}</p>
-                      <p><span class="font-medium">Sq Ft:</span> {{ property.squareFeet }}</p>
-                      <p><span class="font-medium">Year Built:</span> {{ property.yearBuilt }}</p>
+                      <p><span class="font-medium">Sq Ft:</span> {{ property.squareFeet ? property.squareFeet : 'N/A' }}</p>
+                      <p><span class="font-medium">Year Built:</span> {{ property.yearBuilt ? property.yearBuilt : 'N/A' }}</p>
                     </div>
                     <div class="mt-4">
-                      <p class="text-lg font-bold text-indigo-600">${{ property.mlsListingPrice.toLocaleString() }}</p>
-                      <p class="text-sm text-gray-500">Estimated Value: ${{ property.estimatedValue.toLocaleString() }}</p>
+                      <p class="text-lg font-bold text-indigo-600">Estimated Value: ${{ property.estimatedValue ? property.estimatedValue.toLocaleString() : 'N/A' }}</p>
+                      <p class="text-sm text-gray-500">Suggested Rent: ${{ property.suggestedRent ? property.suggestedRent : 'N/A' }}</p>
                     </div>
                   </div>
                 </div>
@@ -67,13 +67,14 @@
   })
   
   const emit = defineEmits(['close', 'updatePage'])
-  
+
   const paginatedResults = computed(() => {
     if (!props.searchResults || !props.searchResults.data) return []
     const start = (props.currentPage - 1) * props.resultsPerPage
     const end = start + props.resultsPerPage
     return props.searchResults.data.slice(start, end)
   })
+  
   
   const totalPages = computed(() => {
     if (!props.searchResults || !props.searchResults.data) return 0

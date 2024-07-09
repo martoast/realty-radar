@@ -60,6 +60,7 @@
   </template>
   
 <script setup>
+import { getStateAbbreviation } from '~/utils/stateAbbreviation';
 
 const router = useRouter()
 const route = useRoute()
@@ -72,12 +73,9 @@ const mapboxgl = nuxtApp.mapboxgl;
 
 const searchParams = reactive({
   address: null,
-  street: null,
-  city: null,
-  state: null,
-  zip: null,
   latitude: null,
-  longitude: null
+  longitude: null,
+  radius: 1
 });
 
 let map = null;
@@ -108,10 +106,12 @@ const isFormEmpty = computed(() => {
 const searchProperties = async () => {
   isLoading.value = true;
   error.value = null;
+  const apiParams = { ...searchParams, count: true };
+  delete apiParams.address;
   try {
     searchResults.value = await $fetch('/api/property-search', {
       method: 'POST',
-      body: searchParams
+      body: apiParams
     });
     drawerOpen.value = true // Open the drawer when results are available
     currentPage.value = 1 // Reset to first page when new search is performed
@@ -129,58 +129,43 @@ const initMap = () => {
   map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/streets-v11',
-    center: [-98.5795, 39.8283], // Center of the US
+    center: [-98.5795, 39.8283],
     zoom: 3
   });
 
-  map.addControl(new mapboxgl.NavigationControl());
-
   map.on('load', () => {
-    map.addSource('circle', {
-      type: 'geojson',
-      data: createGeoJSONCircle([0, 0], 0)
-    });
+    addCircleToMap();
+    // Add circle source and layers here
+    if (searchParams.latitude && searchParams.longitude) {
+      updateMap(searchParams.longitude, searchParams.latitude);
+    }
+  });
+};
 
-    map.addLayer({
-      id: 'circle-fill',
-      type: 'fill',
-      source: 'circle',
-      paint: {
-        'fill-color': '#0058ff',
-        'fill-opacity': 0.4
-      }
-    });
+const addCircleToMap = () => {
+  map.addSource('circle', {
+    type: 'geojson',
+    data: createGeoJSONCircle([0, 0], 0)
+  });
 
-    map.addLayer({
-      id: 'circle-outline',
-      type: 'line',
-      source: 'circle',
-      paint: {
-        'line-color': '#0058ff',
-        'line-width': 2
-      }
-    });
+  map.addLayer({
+    id: 'circle-fill',
+    type: 'fill',
+    source: 'circle',
+    paint: {
+      'fill-color': '#0058ff',
+      'fill-opacity': 0.4
+    }
+  });
 
-    // Add a new source and layer for property markers
-    map.addSource('properties', {
-      type: 'geojson',
-      data: {
-        type: 'FeatureCollection',
-        features: []
-      }
-    });
-
-    map.addLayer({
-      id: 'property-markers',
-      type: 'circle',
-      source: 'properties',
-      paint: {
-        'circle-radius': 6,
-        'circle-color': '#0058ff',
-        'circle-stroke-width': 2,
-        'circle-stroke-color': '#ffffff'
-      }
-    });
+  map.addLayer({
+    id: 'circle-outline',
+    type: 'line',
+    source: 'circle',
+    paint: {
+      'line-color': '#0058ff',
+      'line-width': 2
+    }
   });
 };
 
@@ -228,20 +213,16 @@ const updateMap = (lng, lat) => {
 
 const updateCircle = () => {
   if (map.getSource('circle')) {
-    let lng, lat;
-    if (marker) {
-      const lngLat = marker.getLngLat();
-      lng = lngLat.lng;
-      lat = lngLat.lat;
-    } else {
-      lng = searchParams.lng;
-      lat = searchParams.lat;
-    }
+    const lng = searchParams.longitude;
+    const lat = searchParams.latitude;
+    const radius = searchParams.radius || 1; // Default to 1 if not set
 
     if (lng && lat) {
-      const circleData = createGeoJSONCircle([lng, lat], searchParams.radius);
+      const circleData = createGeoJSONCircle([lng, lat], radius);
       map.getSource('circle').setData(circleData);
     }
+  } else {
+    console.log("No circle to update")
   }
 };
 
@@ -274,14 +255,10 @@ const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
 };
 
 const handleUpdateAddress = (data) => {
-  const [street, city, stateZip] = data.address.split(', ');
-  const [state, zip] = stateZip.split(' ');
+  console.log(data)
   
   searchParams.address = data.address;
-  searchParams.street = street;
-  searchParams.city = city;
-  searchParams.state = state;
-  searchParams.zip = zip;
+ 
   searchParams.longitude = data.longitude;
   searchParams.latitude = data.latitude;
   
@@ -294,11 +271,6 @@ const paginatedResults = computed(() => {
   const start = (currentPage.value - 1) * resultsPerPage;
   const end = start + resultsPerPage;
   return searchResults.value.data.slice(start, end);
-});
-
-const totalPages = computed(() => {
-  if (!searchResults.value || !searchResults.value.data) return 0;
-  return Math.ceil(searchResults.value.data.length / resultsPerPage);
 });
 
 watch(() => searchParams.radius, () => {
@@ -343,7 +315,9 @@ const updateUrlParams = () => {
       query[key] = value.toString()
     }
   })
-  router.push({ query })
+  
+  // Use router.replace instead of router.push
+  router.replace({ query })
 }
 
   // Watch searchParams and update URL
@@ -359,17 +333,20 @@ const updateUrlParams = () => {
     })
 
     if (searchParams.address && searchParams.latitude && searchParams.longitude) {
+      console.log(searchParams)
       handleUpdateAddress({
         address: searchParams.address,
         latitude: searchParams.latitude,
         longitude: searchParams.longitude
       })
+      updateCircle();
     }
   }
 
 onMounted(() => {
   initMap();
   initializeFromUrl();
+  
 });
 </script>
 

@@ -55,5 +55,5 @@ const stateAbbreviations = {
   
   export function getStateAbbreviation(stateName) {
     const normalizedStateName = stateName.toLowerCase().trim();
-    return stateAbbreviations[normalizedStateName] || stateName;
+    return stateAbbreviations[normalizedStateName] || 'CA';
   }

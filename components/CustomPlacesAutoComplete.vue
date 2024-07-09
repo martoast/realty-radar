@@ -1,19 +1,28 @@
 <template>
   <div>
-      <mapbox-search-box
-              ref="searchBoxRef"
-              :access-token="access_token"
-              :placeholder="placeholder"
-              :options="{
-                country: 'US',
-                limit: 6,
-                bbox: [-171.791110603, 18.91619, -66.96466, 71.3577635769],
-              }"
-              types="address"
-              @retrieve="handleRetrieve"
-              proximity="ip"
-            >
-          </mapbox-search-box>
+    <mapbox-search-box
+      ref="searchBoxRef"
+      :access-token="access_token"
+      :placeholder="placeholder"
+      :options="{
+        country: 'US',
+        limit: 6,
+        bbox: [-171.791110603, 18.91619, -66.96466, 71.3577635769],
+      }"
+      :types="[
+        'region',
+        'postcode',
+        'district',
+        'place',
+        'locality',
+        'neighborhood',
+        'street',
+        'address'
+      ]"
+      @retrieve="handleRetrieve"
+      proximity="ip"
+    >
+    </mapbox-search-box>
   </div>
 </template>
 
