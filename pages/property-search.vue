@@ -106,7 +106,7 @@ const isFormEmpty = computed(() => {
 const searchProperties = async () => {
   isLoading.value = true;
   error.value = null;
-  const apiParams = { ...searchParams, count: true };
+  const apiParams = { ...searchParams };
   delete apiParams.address;
   try {
     searchResults.value = await $fetch('/api/property-search', {
@@ -300,9 +300,9 @@ const handleMarketStatusUpdate = (newStatus) => {
 
 const handleAdvancedFiltersUpdate = (newFilters) => {
   Object.keys(newFilters).forEach(key => {
-    if (key in searchParams) {
+    if (newFilters[key] !== null && newFilters[key] !== undefined) {
       searchParams[key] = newFilters[key];
-    }
+    } 
   });
   console.log('Updated searchParams:', searchParams);
 };
