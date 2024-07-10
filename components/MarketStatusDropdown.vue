@@ -2,7 +2,7 @@
   <Menu as="div" class="relative inline-block text-left w-40">
     <div>
       <MenuButton class="inline-flex w-full justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
-        {{ selectedStatusLabel || 'Market Status' }}
+        {{ selectedStatusLabel }}
         <ChevronDownIcon class="-mr-1 h-5 w-5 text-gray-400" aria-hidden="true" />
       </MenuButton>
     </div>
@@ -32,28 +32,40 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
 
 const emit = defineEmits(['update:marketStatus'])
 
-const marketStatuses = [
-  { label: 'On market', value: { mls_pending: false, mls_active: true} },
-  { label: 'Off market', value: { mls_pending: false, mls_active: false} },
-  { label: 'Pending', value: { mls_pending: true, mls_active: false} }
-]
-
-const selectedStatus = ref({
-  value: {
-    label: null
+const props = defineProps({
+  form: {
+    type: Object,
+    required: true
   }
 })
 
-const selectedStatusLabel = computed(() => selectedStatus.value.label)
+const marketStatuses = [
+  { label: 'On market', value: { mls_pending: false, mls_active: true } },
+  { label: 'Off market', value: { mls_pending: false, mls_active: false } },
+  { label: 'Pending', value: { mls_pending: true, mls_active: false } }
+]
+
+const selectedStatus = ref(null)
+
+const selectedStatusLabel = computed(() => selectedStatus.value?.label || 'Market Status')
 
 const selectStatus = (status) => {
   selectedStatus.value = status
   emit('update:marketStatus', status.value)
 }
+
+const updateSelectedStatus = () => {
+  const currentStatus = marketStatuses.find(status => 
+    status.value.mls_pending === props.form.mls_pending && 
+    status.value.mls_active === props.form.mls_active
+  )
+  selectedStatus.value = currentStatus || null
+}
+
+watch(() => props.form, updateSelectedStatus, { immediate: true, deep: true })
 </script>

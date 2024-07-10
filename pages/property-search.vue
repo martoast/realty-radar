@@ -13,11 +13,11 @@
           </div>
           
           <div class="w-40">
-            <MarketStatusDropdown @update:marketStatus="handleMarketStatusUpdate"/>
+            <MarketStatusDropdown @update:marketStatus="handleMarketStatusUpdate" :form="searchParams"/>
           </div>
           
           <div class="w-40">
-            <BedsAndBathsDropdown @update:bedsAndBaths="handleBedsAndBathsUpdate"/>
+            <BedsAndBathsDropdown @update:bedsAndBaths="handleBedsAndBathsUpdate" :form="searchParams"/>
           </div>
 
           <div class="w-40">
@@ -75,7 +75,14 @@ const searchParams = reactive({
   address: null,
   latitude: null,
   longitude: null,
-  radius: 1
+  radius: null,
+  mls_active: null,
+  mls_pending: null,
+  beds_min: null,
+  beds_max: null,
+  baths_min: null,
+  baths_max: null,
+
 });
 
 let map = null;
@@ -136,8 +143,8 @@ const initMap = () => {
   map.on('load', () => {
     addCircleToMap();
     // Add circle source and layers here
-    if (searchParams.latitude && searchParams.longitude) {
-      updateMap(searchParams.longitude, searchParams.latitude);
+    if (searchParams.latitude && searchParams.longitude && searchParams.radius) {
+      updateMap(searchParams.longitude, searchParams.latitude, searchParams.radius);
     }
   });
 };
@@ -198,7 +205,7 @@ const updatePropertyMarkers = () => {
   }
 };
 
-const updateMap = (lng, lat) => {
+const updateMap = (lng, lat, radius) => {
   if (marker) {
     marker.remove();
   }
@@ -208,19 +215,13 @@ const updateMap = (lng, lat) => {
     zoom: 12
   });
 
-  updateCircle(lng, lat, searchParams.radius);
+  updateCircle(lng, lat, radius);
 };
 
 const updateCircle = () => {
   if (map.getSource('circle')) {
-    const lng = searchParams.longitude;
-    const lat = searchParams.latitude;
-    const radius = searchParams.radius || 1; // Default to 1 if not set
-
-    if (lng && lat) {
-      const circleData = createGeoJSONCircle([lng, lat], radius);
-      map.getSource('circle').setData(circleData);
-    }
+    const circleData = createGeoJSONCircle([searchParams.longitude, searchParams.latitude], searchParams.radius);
+    map.getSource('circle').setData(circleData);
   } else {
     console.log("No circle to update")
   }
@@ -255,14 +256,14 @@ const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
 };
 
 const handleUpdateAddress = (data) => {
-  console.log(data)
+  searchParams.radius = 1;
   
   searchParams.address = data.address;
  
   searchParams.longitude = data.longitude;
   searchParams.latitude = data.latitude;
   
-  updateMap(data.longitude, data.latitude);
+  updateMap(searchParams.longitude, searchParams.latitude, searchParams.radius );
 };
 
 
@@ -273,9 +274,9 @@ const paginatedResults = computed(() => {
   return searchResults.value.data.slice(start, end);
 });
 
-watch(() => searchParams.radius, () => {
-  updateCircle();
-});
+// watch(() => searchParams.radius, () => {
+//   updateCircle();
+// });
 
 // Update the watch function for currentPage
 watch([() => currentPage.value, paginatedResults], () => {
@@ -290,7 +291,6 @@ const handleBedsAndBathsUpdate = (newValue) => {
 
   searchParams.baths_min = newValue.baths_min;
   searchParams.baths_max = newValue.baths_max;
-  console.log(searchParams)
 }
 
 const handleMarketStatusUpdate = (newStatus) => {
@@ -309,43 +309,37 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
 
 // Function to update URL query parameters
 const updateUrlParams = () => {
-  const query = {}
-  Object.entries(searchParams).forEach(([key, value]) => {
-    if (value !== null && value !== '') {
-      query[key] = value.toString()
-    }
+  router.replace({
+    query: searchParams
   })
-  
-  // Use router.replace instead of router.push
-  router.replace({ query })
 }
 
   // Watch searchParams and update URL
   watch(searchParams, updateUrlParams, { deep: true })
 
-  // Function to initialize search from URL params
   const initializeFromUrl = () => {
-    Object.keys(route.query).forEach(key => {
-      if (key in searchParams) {
-        const value = route.query[key]
-        searchParams[key] = isNaN(value) ? value : Number(value)
+  Object.keys(route.query).forEach(key => {
+    if (key in searchParams) {
+      const value = route.query[key];
+      if (value === 'true') {
+        searchParams[key] = true;
+      } else if (value === 'false') {
+        searchParams[key] = false;
+      } else if (value === '') {
+        searchParams[key] = null; // Set empty string values to null
+      } else if (!isNaN(Number(value))) {
+        searchParams[key] = Number(value); // Convert to number if it's a valid number
+      } else {
+        searchParams[key] = value; // Keep as string if it's not a number
       }
-    })
-
-    if (searchParams.address && searchParams.latitude && searchParams.longitude) {
-      console.log(searchParams)
-      handleUpdateAddress({
-        address: searchParams.address,
-        latitude: searchParams.latitude,
-        longitude: searchParams.longitude
-      })
-      updateCircle();
     }
-  }
+  });
+  console.log(searchParams);
+}
 
 onMounted(() => {
-  initMap();
   initializeFromUrl();
+  initMap();
   
 });
 </script>

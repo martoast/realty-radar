@@ -33,15 +33,6 @@
               <input type="number" v-model="form.baths_max" placeholder="Max" min="0" step="0.5" class="w-20 p-1 text-sm border rounded">
             </div>
           </div>
-          <div class="px-4 py-2">
-            <button 
-              @click="applyFilter" 
-              :disabled="isFormEmpty"
-              class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Apply filters
-            </button>
-          </div>
           
         </div>
       </MenuItems>
@@ -52,40 +43,62 @@
 <script setup>
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { ChevronDownIcon } from '@heroicons/vue/20/solid'
-import { reactive, ref, computed } from 'vue'
 
 const emit = defineEmits(['update:bedsAndBaths'])
 
-const form = reactive({
+const props = defineProps({
+  form: {
+    type: Object,
+    required: true
+  }
+})
+
+const localForm = reactive({
   beds_min: null,
   beds_max: null,
   baths_min: null,
   baths_max: null
-});
-
-const buttonText = ref('Beds & Baths')
-
-const isFormEmpty = computed(() => {
-  return Object.values(form).every(value => value === null || value === '')
 })
 
-const applyFilter = () => {
-  emit('update:bedsAndBaths', { ...form })
-  updateButtonText()
-}
+const isFormEmpty = computed(() => {
+  return Object.values(localForm).every(value => value === null || value === '')
+})
 
-const updateButtonText = () => {
-  const beds = form.beds_min || form.beds_max ? `${form.beds_min || ''}${form.beds_max ? '-' + form.beds_max : ''} b` : ''
-  const baths = form.baths_min || form.baths_max ? `${form.baths_min || ''}${form.baths_max ? '-' + form.baths_max : ''} ba` : ''
+const buttonText = computed(() => {
+  const beds = localForm.beds_min || localForm.beds_max ? `${localForm.beds_min || ''}${localForm.beds_max ? '-' + localForm.beds_max : ''} b` : ''
+  const baths = localForm.baths_min || localForm.baths_max ? `${localForm.baths_min || ''}${localForm.baths_max ? '-' + localForm.baths_max : ''} ba` : ''
   
   if (beds && baths) {
-    buttonText.value = `${beds}, ${baths}`
+    return `${beds}, ${baths}`
   } else if (beds) {
-    buttonText.value = beds
+    return beds
   } else if (baths) {
-    buttonText.value = baths
+    return baths
   } else {
-    buttonText.value = 'Beds & Baths'
+    return 'Beds & Baths'
   }
+})
+
+const updateLocalForm = () => {
+  localForm.beds_min = props.form.beds_min ?? null
+  localForm.beds_max = props.form.beds_max ?? null
+  localForm.baths_min = props.form.baths_min ?? null
+  localForm.baths_max = props.form.baths_max ?? null
 }
+
+// Watch for changes in the form prop
+watch(() => props.form, updateLocalForm, { immediate: true, deep: true })
+
+// Watch for changes in localForm and emit updates
+watch(localForm, (newValue) => {
+  const filteredValue = Object.entries(newValue).reduce((acc, [key, value]) => {
+    if (value !== null && value !== '') {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+  
+  emit('update:bedsAndBaths', filteredValue)
+}, { deep: true })
+
 </script>
