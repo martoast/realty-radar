@@ -174,18 +174,10 @@
             <!-- Apply Button -->
           <div class="px-4 py-2">
             <button 
-              @click="applyFilter" 
-              
-              class=" mb-4 flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-            >
-              Apply filters
-            </button>
-            <button 
             @click="resetFilters"
-            
             class="flex w-full justify-center rounded-md bg-gray-200 px-3 py-1.5 text-sm font-semibold leading-6 text-gray-700 shadow-sm hover:bg-gray-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
           >
-            Reset
+            Reset filters
           </button>
           </div>
           </div>
@@ -195,65 +187,97 @@
   </template>
   
   <script setup>
-  import { Menu, MenuButton, MenuItems } from '@headlessui/vue'
-  import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-  import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid'
-  import { reactive, watch } from 'vue'
-  
-  const emit = defineEmits(['update:advancedFilters'])
-  
-  const initialForm = {
-    // Property Characteristics fields
-    building_size_min: null,
-    building_size_max: null,
-    lot_size_min: null,
-    lot_size_max: null,
-    year_built_min: null,
-    year_built_max: null,
+import { Menu, MenuButton, MenuItems } from '@headlessui/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
+import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid'
+import { reactive, watch, ref, computed } from 'vue'
 
-    // Foreclosure & Auction fields
-    foreclosure: false,
-    pre_foreclosure: false,
-    auction: false,
-    auction_date_min: null,
-    auction_date_max: null,
-    reo: false,
+const emit = defineEmits(['update:advancedFilters'])
 
-    // Ownership & Occupancy fields
-    last_sale_date_min: null,
-    last_sale_date_max: null,
-    years_owned_min: null,
-    years_owned_max: null,
-    last_sale_price_min: null,
-    last_sale_price_max: null,
-    absentee_owner: false,
-    vacant: false,
-  };
-
-  const form = reactive({...initialForm});
-  const touchedFields = ref(new Set());
-
-  const updateField = (key, value) => {
-    form[key] = value;
-    touchedFields.value.add(key);
+const props = defineProps({
+  form: {
+    type: Object,
+    required: true
   }
+})
 
-  const applyFilter = () => {
-    const changedFields = {};
-    touchedFields.value.forEach(key => {
-      if (form[key] !== null && form[key] !== '' && form[key] !== false) {
-        changedFields[key] = form[key];
-      }
-    });
-    emit('update:advancedFilters', changedFields);
-  }
+const initialForm = {
+  // Property Characteristics fields
+  building_size_min: null,
+  building_size_max: null,
+  lot_size_min: null,
+  lot_size_max: null,
+  year_built_min: null,
+  year_built_max: null,
 
-  const resetFilters = () => {
-    Object.keys(form).forEach(key => {
-      form[key] = initialForm[key];
-    });
-    touchedFields.value.clear();
-    emit('update:advancedFilters', initialForm);
-  }
-  
-  </script>
+  // Foreclosure & Auction fields
+  foreclosure: false,
+  pre_foreclosure: false,
+  auction: false,
+  auction_date_min: null,
+  auction_date_max: null,
+  reo: false,
+
+  // Ownership & Occupancy fields
+  last_sale_date_min: null,
+  last_sale_date_max: null,
+  years_owned_min: null,
+  years_owned_max: null,
+  last_sale_price_min: null,
+  last_sale_price_max: null,
+  absentee_owner: false,
+  vacant: false,
+};
+
+const localForm = reactive({...initialForm});
+const touchedFields = ref(new Set());
+
+const updateField = (key, value) => {
+  localForm[key] = value;
+  touchedFields.value.add(key);
+}
+
+const updateLocalForm = () => {
+  Object.keys(initialForm).forEach(key => {
+    if (props.form[key] !== undefined && props.form[key] !== null) {
+      localForm[key] = props.form[key];
+      touchedFields.value.add(key);
+    } else {
+      localForm[key] = initialForm[key];
+    }
+  });
+}
+
+// Watch for changes in the form prop
+watch(() => props.form, (newForm) => {
+  updateLocalForm();
+}, { immediate: true, deep: true })
+
+// Watch for changes in localForm and emit updates
+watch(localForm, (newValue) => {
+  const changedFields = {};
+  touchedFields.value.forEach(key => {
+    if (newValue[key] !== null && newValue[key] !== '' && newValue[key] !== false) {
+      changedFields[key] = newValue[key];
+    }
+  });
+  emit('update:advancedFilters', changedFields);
+}, { deep: true });
+
+const resetFilters = () => {
+  Object.keys(localForm).forEach(key => {
+    localForm[key] = initialForm[key];
+  });
+  touchedFields.value.clear();
+  emit('update:advancedFilters', {});
+}
+
+const hasActiveFilters = computed(() => {
+  return Object.entries(localForm).some(([key, value]) => 
+    value !== null && value !== '' && value !== false && value !== initialForm[key]
+  );
+});
+
+
+
+</script>

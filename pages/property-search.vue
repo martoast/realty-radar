@@ -21,7 +21,7 @@
           </div>
 
           <div class="w-40">
-            <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" />
+            <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" :form="searchParams" />
           </div>
 
           
@@ -60,8 +60,6 @@
   </template>
   
 <script setup>
-import { getStateAbbreviation } from '~/utils/stateAbbreviation';
-
 const router = useRouter()
 const route = useRoute()
 
@@ -82,7 +80,31 @@ const searchParams = reactive({
   beds_max: null,
   baths_min: null,
   baths_max: null,
+  // Property Characteristics fields
+  building_size_min: null,
+  building_size_max: null,
+  lot_size_min: null,
+  lot_size_max: null,
+  year_built_min: null,
+  year_built_max: null,
 
+  // Foreclosure & Auction fields
+  foreclosure: false,
+  pre_foreclosure: false,
+  auction: false,
+  auction_date_min: null,
+  auction_date_max: null,
+  reo: false,
+
+  // Ownership & Occupancy fields
+  last_sale_date_min: null,
+  last_sale_date_max: null,
+  years_owned_min: null,
+  years_owned_max: null,
+  last_sale_price_min: null,
+  last_sale_price_max: null,
+  absentee_owner: false,
+  vacant: false,
 });
 
 let map = null;
@@ -113,15 +135,22 @@ const isFormEmpty = computed(() => {
 const searchProperties = async () => {
   isLoading.value = true;
   error.value = null;
-  const apiParams = { ...searchParams };
-  delete apiParams.address;
+
+  // Filter out null, empty, and false values from searchParams
+  const apiParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
+    if (key !== 'address' && value !== null && value !== '' && value !== false) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+
   try {
     searchResults.value = await $fetch('/api/property-search', {
       method: 'POST',
       body: apiParams
     });
-    drawerOpen.value = true // Open the drawer when results are available
-    currentPage.value = 1 // Reset to first page when new search is performed
+    drawerOpen.value = true; // Open the drawer when results are available
+    currentPage.value = 1; // Reset to first page when new search is performed
     updatePropertyMarkers(); // This will now update based on paginatedResults
   } catch (err) {
     console.error('Error searching properties:', err);
@@ -295,7 +324,6 @@ const handleBedsAndBathsUpdate = (newValue) => {
 
 const handleMarketStatusUpdate = (newStatus) => {
   Object.assign(searchParams, newStatus);
-  console.log('Updated searchParams:', searchParams);
 };
 
 const handleAdvancedFiltersUpdate = (newFilters) => {
@@ -304,15 +332,21 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
       searchParams[key] = newFilters[key];
     } 
   });
-  console.log('Updated searchParams:', searchParams);
 };
 
-// Function to update URL query parameters
-const updateUrlParams = () => {
-  router.replace({
-    query: searchParams
-  })
-}
+  // Function to update URL query parameters
+  const updateUrlParams = () => {
+    const filteredParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
+      if (value !== null && value !== '' && value !== false) {
+        acc[key] = value;
+      }
+      return acc;
+    }, {});
+
+    router.replace({
+      query: filteredParams
+    });
+  }
 
   // Watch searchParams and update URL
   watch(searchParams, updateUrlParams, { deep: true })
@@ -334,7 +368,6 @@ const updateUrlParams = () => {
       }
     }
   });
-  console.log(searchParams);
 }
 
 onMounted(() => {

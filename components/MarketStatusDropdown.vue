@@ -45,9 +45,9 @@ const props = defineProps({
 })
 
 const marketStatuses = [
-  { label: 'On market', value: { mls_pending: false, mls_active: true } },
-  { label: 'Off market', value: { mls_pending: false, mls_active: false } },
-  { label: 'Pending', value: { mls_pending: true, mls_active: false } }
+  { label: 'On market', value: { mls_active: true } },
+  { label: 'Off market', value: { mls_active: false } },
+  { label: 'Pending', value: { mls_pending: true} }
 ]
 
 const selectedStatus = ref(null)
