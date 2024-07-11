@@ -192,7 +192,7 @@ import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { ChevronDownIcon, ChevronUpIcon } from '@heroicons/vue/20/solid'
 import { reactive, watch, ref, computed } from 'vue'
 
-const emit = defineEmits(['update:advancedFilters'])
+const emit = defineEmits(['update:advancedFilters', 'resetForm'])
 
 const props = defineProps({
   form: {
@@ -269,7 +269,7 @@ const resetFilters = () => {
     localForm[key] = initialForm[key];
   });
   touchedFields.value.clear();
-  emit('update:advancedFilters', {});
+  emit('resetForm');  // Emit a resetForm event instead of update:advancedFilters
 }
 
 const hasActiveFilters = computed(() => {

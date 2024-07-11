@@ -21,7 +21,7 @@
           </div>
 
           <div class="w-40">
-            <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" :form="searchParams" />
+            <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" :form="searchParams" @resetForm="handleResetForm" />
           </div>
 
           
@@ -29,7 +29,7 @@
           <div class="w-40">
             <button
             @click="searchProperties"
-            :disabled="isLoading || isFormEmpty"
+            :disabled="isLoading || isFormEmpty || !searchParams.latitude || !searchParams.longitude || !searchParams.radius"
             class="flex w-full justify-center rounded-md bg-primary px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm disabled:opacity-50 hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
           >
             <span v-if="!isLoading">Search Properties</span>
@@ -69,7 +69,9 @@ const accessToken = config.public.MAPBOX_API_TOKEN;
 const nuxtApp = useNuxtApp();
 const mapboxgl = nuxtApp.mapboxgl;
 
-const searchParams = reactive({
+const searchParams = reactive({});
+
+const searchParamsFull = reactive({
   address: null,
   latitude: null,
   longitude: null,
@@ -113,7 +115,7 @@ let marker = null;
 const isLoading = ref(false);
 const error = ref(null);
 
-const searchResults = ref(null);
+const searchResults = shallowRef(null);
 
 const currentPage = ref(1);
 const resultsPerPage = 5;
@@ -138,7 +140,7 @@ const searchProperties = async () => {
 
   // Filter out null, empty, and false values from searchParams
   const apiParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
-    if (key !== 'address' && value !== null && value !== '' && value !== false) {
+    if (key !== 'address' && key !== 'mls_active' && value !== null && value !== '') {
       acc[key] = value;
     }
     return acc;
@@ -285,7 +287,7 @@ const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
 };
 
 const handleUpdateAddress = (data) => {
-  searchParams.radius = 1;
+  searchParams.radius = searchParams.radius ?? 1;
   
   searchParams.address = data.address;
  
@@ -337,7 +339,7 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
   // Function to update URL query parameters
   const updateUrlParams = () => {
     const filteredParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
-      if (value !== null && value !== '' && value !== false) {
+      if (value !== null && value !== '') {
         acc[key] = value;
       }
       return acc;
@@ -353,21 +355,39 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
 
   const initializeFromUrl = () => {
   Object.keys(route.query).forEach(key => {
-    if (key in searchParams) {
+    if (key in searchParamsFull) {
       const value = route.query[key];
       if (value === 'true') {
         searchParams[key] = true;
       } else if (value === 'false') {
         searchParams[key] = false;
       } else if (value === '') {
-        searchParams[key] = null; // Set empty string values to null
+        delete searchParams[key];
       } else if (!isNaN(Number(value))) {
-        searchParams[key] = Number(value); // Convert to number if it's a valid number
+        searchParams[key] = Number(value);
       } else {
-        searchParams[key] = value; // Keep as string if it's not a number
+        searchParams[key] = value;
       }
     }
   });
+};
+
+const handleResetForm = () => {
+  const { address, latitude, longitude } = searchParams;
+  
+  // Reset searchParams to initial state
+  Object.keys(searchParams).forEach(key => {
+    if (typeof searchParams[key] === 'boolean') {
+      searchParams[key] = false;  // Reset boolean fields to false
+    } else {
+      searchParams[key] = null;  // Reset other fields to null
+    }
+  });
+
+  // Restore address-related fields
+  searchParams.address = address;
+  searchParams.latitude = latitude;
+  searchParams.longitude = longitude;
 }
 
 onMounted(() => {
