@@ -171,6 +171,32 @@
               </div>
             </DisclosurePanel>
           </Disclosure>
+
+          <Disclosure v-slot="{ open }">
+            <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+              <span>Radius</span>
+              <ChevronUpIcon
+                :class="open ? 'rotate-180 transform' : ''"
+                class="h-5 w-5 text-gray-500"
+              />
+            </DisclosureButton>
+            <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
+              <div class="space-y-4 w-100">
+                <label for="radius" class="block text-sm font-medium leading-6 text-gray-900">
+                  Search Radius: {{ form.radius }} miles
+                </label>
+                <input
+                  v-model="form.radius"
+                  type="range"
+                  min="1"
+                  max="10"
+                  step="1"
+                  class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary dark:bg-gray-300"
+                />
+                
+              </div>
+            </DisclosurePanel>
+          </Disclosure>
             <!-- Apply Button -->
           <div class="px-4 py-2">
             <button 
@@ -227,6 +253,8 @@ const initialForm = {
   last_sale_price_max: null,
   absentee_owner: false,
   vacant: false,
+
+  radius: 1
 };
 
 const localForm = reactive({...initialForm});
@@ -257,7 +285,7 @@ watch(() => props.form, (newForm) => {
 watch(localForm, (newValue) => {
   const changedFields = {};
   touchedFields.value.forEach(key => {
-    if (newValue[key] !== null && newValue[key] !== '' && newValue[key] !== false) {
+    if (newValue[key] !== null && newValue[key] !== '' && newValue[key] !== false || key === 'radius') {
       changedFields[key] = newValue[key];
     }
   });
@@ -267,9 +295,10 @@ watch(localForm, (newValue) => {
 const resetFilters = () => {
   Object.keys(localForm).forEach(key => {
     localForm[key] = initialForm[key];
+    console.log(localForm[key])
   });
   touchedFields.value.clear();
-  emit('resetForm');  // Emit a resetForm event instead of update:advancedFilters
+  emit('resetForm'); 
 }
 
 const hasActiveFilters = computed(() => {

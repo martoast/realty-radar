@@ -146,6 +146,15 @@ const searchProperties = async () => {
     return acc;
   }, {});
 
+
+  // Ensure latitude, longitude, and radius are always included
+  if (!apiParams.latitude || !apiParams.longitude || !apiParams.radius) {
+    console.error('Missing required parameters');
+    error.value = 'Missing required parameters: latitude, longitude, or radius';
+    isLoading.value = false;
+    return;
+  }
+
   try {
     searchResults.value = await $fetch('/api/property-search', {
       method: 'POST',
@@ -253,8 +262,6 @@ const updateCircle = () => {
   if (map.getSource('circle')) {
     const circleData = createGeoJSONCircle([searchParams.longitude, searchParams.latitude], searchParams.radius);
     map.getSource('circle').setData(circleData);
-  } else {
-    console.log("No circle to update")
   }
 };
 
@@ -305,9 +312,9 @@ const paginatedResults = computed(() => {
   return searchResults.value.data.slice(start, end);
 });
 
-// watch(() => searchParams.radius, () => {
-//   updateCircle();
-// });
+watch(() => searchParams.radius, () => {
+  updateCircle();
+});
 
 // Update the watch function for currentPage
 watch([() => currentPage.value, paginatedResults], () => {
@@ -350,7 +357,6 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
     });
   }
 
-  // Watch searchParams and update URL
   watch(searchParams, updateUrlParams, { deep: true })
 
   const initializeFromUrl = () => {
@@ -377,7 +383,9 @@ const handleResetForm = () => {
   
   // Reset searchParams to initial state
   Object.keys(searchParams).forEach(key => {
-    if (typeof searchParams[key] === 'boolean') {
+    if (key === 'radius') {
+      searchParams[key] = 1;  // Set radius to 1 or the value provided
+    } else if (typeof searchParams[key] === 'boolean') {
       searchParams[key] = false;  // Reset boolean fields to false
     } else {
       searchParams[key] = null;  // Reset other fields to null
