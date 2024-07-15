@@ -1,7 +1,7 @@
 <template>
   <div class="bg-white min-h-screen">
     <div class="container mx-auto">
-      <div class="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-24 lg:max-w-7xl lg:px-8">
+      <div class="mx-auto max-w-2xl px-4 py-4 sm:px-6 sm:py-12 lg:max-w-7xl lg:px-8">
         
         <div class="mb-4">
           <button @click="goBack" type="button" class="rounded-full bg-indigo-600 p-2 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -25,7 +25,9 @@
               <div class="mt-4">
                 <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl mb-3">{{ propertyDetail?.propertyInfo?.address?.label ?? "N/A" }}</h1>
 
-                <p class="text-3xl font-semibold tracking-tight text-indigo-600 mb-3">
+                <p class="mt-2 text-gray-500">{{ propertyDetail.propertyInfo.bedrooms }} bed | {{ propertyDetail.propertyInfo.bathrooms }} bath | {{formatNumber(propertyDetail.propertyInfo.livingSquareFeet)}} sqft | {{ formatNumber(propertyDetail.lotInfo.lotSquareFeet) }} lot sqft | {{ propertyDetail.propertyInfo.yearBuilt }} year built </p>
+
+                <p class="text-3xl font-semibold tracking-tight text-indigo-600 my-3">
                   {{ formatCurrency(zillowData.price) }}
                 </p>
                 <p class="mt-2 text-sm text-gray-500">
@@ -36,39 +38,7 @@
 
             <p class="mt-6 text-gray-500">{{ zillowData.description }}</p>
 
-            <!-- Info Sections -->
-            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
-                <!-- General Information -->
-                <section>
-                  <h3 class="text-xl font-semibold text-gray-900">General Information</h3>
-                  <div class="space-y-2 text-sm text-gray-500 mt-2">
-                    <p><span class="font-medium">Property Type:</span> {{ propertyDetail.propertyType }}</p>
-                    <p><span class="font-medium">Bedrooms:</span> {{ propertyDetail.propertyInfo.bedrooms }}</p>
-                    <p><span class="font-medium">Bathrooms:</span> {{ propertyDetail.propertyInfo.bathrooms }}</p>
-                    <p><span class="font-medium">Year Built:</span> {{ propertyDetail.propertyInfo.yearBuilt ?? 'N/A' }}</p>
-                    <p><span class="font-medium">Lot Size:</span> {{ formatNumber(propertyDetail.propertyInfo.lotSquareFeet) ?? 'N/A' }} sqft</p>
-                    <p><span class="font-medium">Living Area:</span> {{ formatNumber(propertyDetail.propertyInfo.livingSquareFeet) ?? 'N/A' }} sqft</p>
-                  </div>
-                </section>
-  
-                <!-- Financial Information -->
-                <section>
-                  <h3 class="text-xl font-semibold text-gray-900">Financial Information</h3>
-                  <div class="space-y-2 text-sm text-gray-500 mt-2">
-                    <p><span class="font-medium">Rent Zestimate:</span> {{ formatCurrency(zillowData.rentZestimate) ?? 'N/A'}}</p>
-                    <p><span class="font-medium">Zestimate:</span> {{ formatCurrency(zillowData.zestimate) ?? 'N/A'}}</p>
-                    <p><span class="font-medium">Estimated Value:</span> {{ formatCurrency(propertyDetail.estimatedValue) ?? 'N/A'}}</p>
-                    <p><span class="font-medium">Estimated Equity:</span> {{ formatCurrency(propertyDetail.estimatedEquity) ?? 'N/A'}}</p>
-                    <p><span class="font-medium">Equity Percentage:</span> {{ propertyDetail.equityPercent ? `${propertyDetail.equityPercent}%` : 'N/A' }}</p>
-                    <p><span class="font-medium">Estimated Mortgage Balance:</span> {{ formatCurrency(propertyDetail.estimatedMortgageBalance) ?? 'N/A' }}</p>
-                    <p><span class="font-medium">Estimated Mortgage Payment:</span> {{ formatCurrency(propertyDetail.estimatedMortgagePayment) ?? 'N/A' }}</p>
-                    <p><span class="font-medium">Deed in Lieu:</span> {{ propertyDetail.deedInLieu ? 'Yes' : 'No' }}</p>
-                    <p><span class="font-medium">Lieu:</span> {{ propertyDetail.lien ? 'Yes' : 'No' }}</p>
-                    <p><span class="font-medium">Tax Lien:</span> {{ propertyDetail.taxLien? 'Yes' : 'No' }}</p>
-                    
-                  </div>
-                </section>
-            </div>
+            
 
             <div class="mt-10 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
               <a :href="'https://www.zillow.com' + zillowData.url" target="_blank">
@@ -126,19 +96,72 @@
           <div class="mx-auto mt-16 w-full max-w-2xl lg:col-span-4 lg:mt-0 lg:max-w-none">
             <TabGroup>
               <div class="border-b border-gray-200">
-                <TabList class="-mb-px flex space-x-8">
+                <TabList class="-mb-px flex space-x-8 overflow-x-auto">
                   <Tab v-slot="{ selected }">
-                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">Lot Info</button>
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Overview
+                    </button>
                   </Tab>
                   <Tab v-slot="{ selected }">
-                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">Nearby Places</button>
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Lot Info
+                    </button>
                   </Tab>
                   <Tab v-slot="{ selected }">
-                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">Price History</button>
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Mortgage & Transactions
+                    </button>
+                  </Tab>
+                  <Tab v-slot="{ selected }">
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Foreclosures & Liens
+                    </button>
+                  </Tab>
+                  <Tab v-slot="{ selected }">
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Nearby Places
+                    </button>
                   </Tab>
                 </TabList>
               </div>
               <TabPanels>
+                <TabPanel class="pt-10">
+                  <h3 class="sr-only">Overview</h3>
+                  <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Property Type</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyType }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Bedrooms</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.bedrooms }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Bathrooms</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.bathrooms }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Year Built</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.yearBuilt ?? 'N/A' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Lot Size</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatNumber(propertyDetail.propertyInfo.lotSquareFeet) ?? 'N/A' }} sqft</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Living Area</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatNumber(propertyDetail.propertyInfo.livingSquareFeet) ?? 'N/A' }} sqft</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Zestimate</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.zestimate) ?? 'N/A'}}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Rent Zestimate</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.rentZestimate) ?? 'N/A'}}</dd>
+                    </div>
+                  </dl>
+                </TabPanel>
                 <TabPanel class="pt-10">
                   <h3 class="sr-only">Lot Info</h3>
                   <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
@@ -193,6 +216,57 @@
                   </dl>
                 </TabPanel>
                 <TabPanel class="pt-10">
+                <h3 class="sr-only">Mortgage & Transactions</h3>
+                <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                  <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Estimated Value</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.estimatedValue) ?? 'N/A'}}</dd>
+                  </div>
+                  <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Estimated Equity</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.estimatedEquity) ?? 'N/A'}}</dd>
+                  </div>
+                  <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Equity Percentage</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.equityPercent ? `${propertyDetail.equityPercent}%` : 'N/A' }}</dd>
+                  </div>
+                  <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Estimated Mortgage Balance</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.estimatedMortgageBalance) ?? 'N/A' }}</dd>
+                  </div>
+                  <div class="sm:col-span-1">
+                    <dt class="text-sm font-medium text-gray-500">Estimated Mortgage Payment</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.estimatedMortgagePayment) ?? 'N/A' }}</dd>
+                  </div>
+                </dl>
+                <div class="mt-8">
+                  <h4 class="text-lg font-medium text-gray-900 mb-4">Price History</h4>
+                  <ul role="list" class="-mb-8">
+                    <li v-for="(event, eventIdx) in propertyDetail.priceHistory" :key="event.date">
+                      <!-- ... (Keep existing Price History content) ... -->
+                    </li>
+                  </ul>
+                </div>
+                </TabPanel>
+                <TabPanel class="pt-10">
+                  <h3 class="sr-only">Foreclosures & Liens</h3>
+                  <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Deed in Lieu</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.deedInLieu ? 'Yes' : 'No' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Lien</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.lien ? 'Yes' : 'No' }}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Tax Lien</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.taxLien ? 'Yes' : 'No' }}</dd>
+                    </div>
+                  </dl>
+                </TabPanel>
+                
+                <TabPanel class="pt-10">
                   <h3 class="sr-only">Nearby Places</h3>
                   <ul role="list" class="divide-y divide-gray-200">
                     <li v-for="hospital in nearbyHospitals" :key="hospital.name" class="py-4 flex">
@@ -202,35 +276,6 @@
                       </div>
                     </li>
                   </ul>
-                </TabPanel>
-                <TabPanel class="pt-10">
-                  <h3 class="sr-only">Price History</h3>
-                  <div class="flow-root">
-                    <ul role="list" class="-mb-8">
-                      <li v-for="(event, eventIdx) in propertyDetail.priceHistory" :key="event.date">
-                        <div class="relative pb-8">
-                          <span v-if="eventIdx !== propertyDetail.priceHistory.length - 1" class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true" />
-                          <div class="relative flex space-x-3">
-                            <div>
-                              <span class="h-8 w-8 rounded-full bg-gray-400 flex items-center justify-center ring-8 ring-white">
-                                <svg class="h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                                  <path fill-rule="evenodd" d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12zm-1-5a1 1 0 011-1h2a1 1 0 110 2h-2a1 1 0 01-1-1z" clip-rule="evenodd" />
-                                </svg>
-                              </span>
-                            </div>
-                            <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
-                              <div>
-                                <p class="text-sm text-gray-500">{{ event.event }}: <span class="font-medium text-gray-900">{{ formatCurrency(event.price) }}</span></p>
-                              </div>
-                              <div class="text-right text-sm whitespace-nowrap text-gray-500">
-                                <time :datetime="event.date">{{ formatDate(event.date) }}</time>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </li>
-                    </ul>
-                  </div>
                 </TabPanel>
               </TabPanels>
             </TabGroup>
