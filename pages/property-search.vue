@@ -21,6 +21,11 @@
           </div>
 
           <div class="w-40">
+            <PropertyTypeDropdown  @update:propertyType="handlePropertyTypesUpdate" :form="searchParams"/>
+
+          </div>
+
+          <div class="w-40">
             <AdvancedSearchDropdown @update:advancedFilters="handleAdvancedFiltersUpdate" :form="searchParams" @resetForm="handleResetForm" />
           </div>
 
@@ -82,6 +87,8 @@ const searchParamsFull = reactive({
   beds_max: null,
   baths_min: null,
   baths_max: null,
+
+  property_type: null,
   // Property Characteristics fields
   building_size_min: null,
   building_size_max: null,
@@ -145,7 +152,6 @@ const searchProperties = async () => {
     }
     return acc;
   }, {});
-
 
   // Ensure latitude, longitude, and radius are always included
   if (!apiParams.latitude || !apiParams.longitude || !apiParams.radius) {
@@ -333,6 +339,10 @@ const handleBedsAndBathsUpdate = (newValue) => {
 
 const handleMarketStatusUpdate = (newStatus) => {
   Object.assign(searchParams, newStatus);
+};
+
+const handlePropertyTypesUpdate = (newValue) => {
+  searchParams.property_type = newValue;
 };
 
 const handleAdvancedFiltersUpdate = (newFilters) => {

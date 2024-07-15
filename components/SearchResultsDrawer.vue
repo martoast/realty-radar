@@ -14,6 +14,51 @@
                   </svg>
                 </button>
               </div>
+
+              <!-- List Size Feedback Section -->
+              <div class="mt-6 p-4 bg-gray-100 rounded-lg">
+                <h2 class="text-lg font-semibold mb-2">List Size</h2>
+                <div class="flex items-start space-x-4">
+                  <div class="flex-1">
+                    <div class="relative h-4 bg-gray-300 rounded-full overflow-hidden">
+                      <div 
+                        :class="[
+                          'absolute h-full rounded-full',
+                          { 'bg-red-500': listSizeCategory === 'narrow',
+                            'bg-green-500': listSizeCategory === 'optimal',
+                            'bg-yellow-500': listSizeCategory === 'broad' }
+                        ]"
+                        :style="{ width: `${listSizePercentage}%` }"
+                      ></div>
+                    </div>
+                    <div class="flex justify-between mt-1 text-sm text-gray-600">
+                      <span>Specific</span>
+                      <span>Broad</span>
+                    </div>
+                  </div>
+                  <div class="flex-1">
+                    <p class="text-sm text-gray-600 mb-1">Your list size is defined by your search and filters.</p>
+                    <p class="font-semibold" :class="{
+                      'text-red-600': listSizeCategory === 'narrow',
+                      'text-green-500': listSizeCategory === 'optimal',
+                      'text-yellow-600': listSizeCategory === 'broad'
+                    }">
+                      Your list is {{ listSizeCategory }}.
+                    </p>
+                  </div>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                  <p>Results: <strong>{{ searchResults.data.length }}</strong></p>
+                  <button 
+                    class="px-4 py-2 bg-primary text-white rounded disabled:opacity-50"
+                    :disabled="!canCreateList"
+                    @click="createList"
+                  >
+                    Create List
+                  </button>
+                </div>
+              </div>
+
               <div v-if="searchResults" class="mt-6 space-y-4">
                 <NuxtLink v-for="property in paginatedResults" 
                   :key="property.id" 
@@ -36,7 +81,7 @@
                 </NuxtLink>
               </div>
               <!-- Pagination controls -->
-              <div class="mt-4 flex justify-between items-center">
+              <div v-if="totalPages > 1" class="mt-4 flex justify-between items-center">
                 <button 
                   @click="$emit('updatePage', currentPage - 1)" 
                   :disabled="currentPage === 1"
@@ -71,7 +116,7 @@
     resultsPerPage: Number
   })
   
-  const emit = defineEmits(['close', 'updatePage'])
+  const emit = defineEmits(['close', 'updatePage', 'createList'])
 
   const paginatedResults = computed(() => {
     if (!props.searchResults || !props.searchResults.data) return []
@@ -87,6 +132,30 @@
     if (!props.searchResults || !props.searchResults.data) return 0
     return Math.ceil(props.searchResults.data.length / props.resultsPerPage)
   })
+
+  // New computed properties for list size feedback
+  const listSizePercentage = computed(() => {
+    const totalResults = props.searchResults?.data?.length || 0
+    // Adjust these thresholds as needed
+    if (totalResults <= 10) return 25
+    if (totalResults <= 50) return 50
+    if (totalResults <= 100) return 75
+    return 100
+  })
+
+  const listSizeCategory = computed(() => {
+    if (listSizePercentage.value <= 25) return 'narrow'
+    if (listSizePercentage.value <= 75) return 'optimal'
+    return 'broad'
+  })
+
+  const canCreateList = computed(() => {
+    return props.searchResults?.data?.length > 0
+  })
+
+  const createList = () => {
+    emit('createList')
+  }
   </script>
   
   <style scoped>
