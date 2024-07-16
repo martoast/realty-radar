@@ -81,12 +81,19 @@ const searchParamsFull = reactive({
   latitude: null,
   longitude: null,
   radius: null,
+  size: null,
   mls_active: null,
   mls_pending: null,
   beds_min: null,
   beds_max: null,
   baths_min: null,
   baths_max: null,
+
+  //property value
+  value_min: null,
+  value_max: null,
+  assessed_value_min: null,
+  assessed_value_max: null,
 
   property_type: null,
   // Property Characteristics fields
@@ -97,7 +104,8 @@ const searchParamsFull = reactive({
   year_built_min: null,
   year_built_max: null,
 
-  // Foreclosure & Auction fields
+  // Liens & Foreclosures
+  tax_lien: false,
   foreclosure: false,
   pre_foreclosure: false,
   auction: false,
@@ -114,6 +122,14 @@ const searchParamsFull = reactive({
   last_sale_price_max: null,
   absentee_owner: false,
   vacant: false,
+
+  // Equity fields
+  estimated_equity: null,
+  equity_operator: null,
+  equity_percent: null,
+  equity_percent_operator: null,
+
+  document_type_code: null
 });
 
 let map = null;
@@ -272,15 +288,16 @@ const updateCircle = () => {
 };
 
 const createGeoJSONCircle = (center, radiusInMiles, points = 64) => {
-  const km = radiusInMiles * 1.60934; // Convert miles to kilometers
   const coords = {
     latitude: center[1],
     longitude: center[0]
   };
 
   const ret = [];
-  const distanceX = km / (111.320 * Math.cos(coords.latitude * Math.PI / 180));
-  const distanceY = km / 110.574;
+  // Convert miles to degrees for longitude and latitude
+  // Earth's radius is approximately 3,963 miles
+  const distanceX = radiusInMiles / (69.172 * Math.cos(coords.latitude * Math.PI / 180));
+  const distanceY = radiusInMiles / 69.172;
 
   for (let i = 0; i < points; i++) {
     const theta = (i / points) * (2 * Math.PI);
@@ -354,18 +371,18 @@ const handleAdvancedFiltersUpdate = (newFilters) => {
 };
 
   // Function to update URL query parameters
-  const updateUrlParams = () => {
-    const filteredParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
-      if (value !== null && value !== '') {
-        acc[key] = value;
-      }
-      return acc;
-    }, {});
+const updateUrlParams = () => {
+  const filteredParams = Object.entries(searchParams).reduce((acc, [key, value]) => {
+    if (value !== null && value !== '' && value !== false) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
 
-    router.replace({
-      query: filteredParams
-    });
-  }
+  router.replace({
+    query: filteredParams
+  });
+}
 
   watch(searchParams, updateUrlParams, { deep: true })
 

@@ -316,6 +316,7 @@ const fetchPropertyDetail = async () => {
       body: { id: route.params.id, comps: true }
     })
     propertyDetail.value = response.data
+    console.log(propertyDetail.value)
     await triggerApiRequests()
   } catch (err) {
     console.error('Error fetching property detail:', err)
@@ -344,6 +345,7 @@ const fetchZillowData = async (address) => {
       },
     })
     zillowData.value = response
+    console.log(zillowData.value)
   } catch (err) {
     console.error('Error fetching Zillow data:', err)
   }

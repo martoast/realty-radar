@@ -17,6 +17,69 @@
       >
         <MenuItems class="absolute right-0 z-10 mt-2 w-96 origin-top-left rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div class="py-1">
+
+            <!-- Updated Document Type Codes Section -->
+        <Disclosure v-slot="{ open }">
+          <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+            <span>Document Type</span>
+            <ChevronUpIcon
+              :class="open ? 'rotate-180 transform' : ''"
+              class="h-5 w-5 text-gray-500"
+            />
+          </DisclosureButton>
+          <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
+            <div class="space-y-4 w-full">
+              <p class="text-sm text-gray-700">
+                Filter your search properties based on how they were transacted. Find different Deed Types, Liens, Trustee Relationships, and more!
+              </p>
+              <div>
+                <label for="document-type-code" class="block text-sm font-medium text-gray-700">Select Document Type Code</label>
+                <select 
+                  id="document-type-code"
+                  :value="localForm.document_type_code"
+                  @input="updateField('document_type_code', $event.target.value)"
+                  class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                >
+                  <option value="">Select a document type code</option>
+                  <option v-for="option in documentTypeCodes" :key="option.value" :value="option.value">
+                    {{ option.label }}
+                  </option>
+                </select>
+              </div>
+            </div>
+          </DisclosurePanel>
+        </Disclosure>
+            
+            <!-- Property Characteristics -->
+            <Disclosure v-slot="{ open }">
+            <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+              <span>Property Value</span>
+              <ChevronUpIcon
+                :class="open ? 'rotate-180 transform' : ''"
+                class="h-5 w-5 text-gray-500"
+              />
+            </DisclosureButton>
+            <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
+              <div class="space-y-4 w-100">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Property Value</p>
+                  <div class="mt-1 flex items-center space-x-2">
+                    <input type="number" :value="form.value_min" @input="updateField('value_min', $event.target.value)" placeholder="Min" min="0" class="p-1 text-sm border rounded">
+                    <span class="text-gray-500">-</span>
+                    <input type="number" :value="form.value_max" @input="updateField('value_max', $event.target.value)" placeholder="Max" min="0" class="p-1 text-sm border rounded">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Assessed Value</p>
+                  <div class="mt-1 flex items-center space-x-2">
+                    <input type="number" :value="form.assessed_value_min" @input="updateField('assessed_value_min', $event.target.value)" placeholder="Min" min="0" class="p-1 text-sm border rounded">
+                    <span class="text-gray-500">-</span>
+                    <input type="number" :value="form.assessed_value_max" @input="updateField('assessed_value_max', $event.target.value)" placeholder="Max" min="0" class="p-1 text-sm border rounded">
+                  </div>
+                </div>
+              </div>
+            </DisclosurePanel>
+            </Disclosure>
             <!-- Property Characteristics -->
             <Disclosure v-slot="{ open }">
             <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
@@ -58,7 +121,7 @@
           <!-- Foreclosure & Auction -->
           <Disclosure v-slot="{ open }">
             <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
-              <span>Foreclosure & Auction</span>
+              <span>Liens & Foreclosure</span>
               <ChevronUpIcon
                 :class="open ? 'rotate-180 transform' : ''"
                 class="h-5 w-5 text-gray-500"
@@ -66,6 +129,14 @@
             </DisclosureButton>
             <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
               <div class="space-y-4">
+                <div class="flex items-start">
+                  <div class="flex items-center h-5">
+                    <input id="tax_lien" :checked="form.tax_lien" @change="updateField('tax_lien', $event.target.checked)" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                  </div>
+                  <div class="ml-3 text-sm">
+                    <label for="tax_lien" class="font-medium text-gray-700">Include Liens</label>
+                  </div>
+                </div>
                 <div class="flex items-start">
                   <div class="flex items-center h-5">
                     <input id="foreclosure" :checked="form.foreclosure" @change="updateField('foreclosure', $event.target.checked)" type="checkbox" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
@@ -172,6 +243,59 @@
             </DisclosurePanel>
           </Disclosure>
 
+          <!-- Operator Search Fields Section -->
+          <Disclosure v-slot="{ open }">
+            <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
+              <span>Equity</span>
+              <ChevronUpIcon
+                :class="open ? 'rotate-180 transform' : ''"
+                class="h-5 w-5 text-gray-500"
+              />
+            </DisclosureButton>
+            <DisclosurePanel class="px-4 pt-4 pb-2 text-sm text-gray-500">
+              <div class="space-y-4 w-full">
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Estimated Equity</p>
+                  <div class="mt-1 flex items-center space-x-2">
+                    <select :value="localForm.equity_operator" @input="updateField('equity_operator', $event.target.value)" class="p-1 text-sm border rounded flex-grow-0 flex-shrink-0 w-1/3">
+                      <option value="gt">Greater than</option>
+                      <option value="lt">Less than</option>
+                      <option value="eq">Equal to</option>
+                    </select>
+                    <input type="number" :value="localForm.estimated_equity" @input="updateField('estimated_equity', $event.target.value)" placeholder="Value" class="p-1 text-sm border rounded flex-grow w-2/3">
+                  </div>
+                </div>
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Equity Percent</p>
+                  <div class="mt-1 flex items-center space-x-2">
+                    <select :value="localForm.equity_percent_operator" @input="updateField('equity_percent_operator', $event.target.value)" class="p-1 text-sm border rounded flex-grow-0 flex-shrink-0 w-1/3">
+                      <option value="gt">Greater than</option>
+                      <option value="lt">Less than</option>
+                      <option value="eq">Equal to</option>
+                    </select>
+                    <div class="relative flex items-center flex-grow w-2/3">
+                      <input 
+                        type="number" 
+                        :value="localForm.equity_percent" 
+                        @input="updateField('equity_percent', $event.target.value)" 
+                        placeholder="0-100" 
+                        min="0" 
+                        max="100" 
+                        step="0.1"
+                        class="p-1 pr-6 text-sm border rounded w-full"
+                      >
+                      <span class="absolute right-2 text-gray-500">%</span>
+                    </div>
+                  </div>
+                  <div class="flex items-end">
+                    <p class="mt-1 text-xs text-gray-500">Enter a value between 0 and 100</p>
+
+                  </div>
+                </div>
+              </div>
+            </DisclosurePanel>
+          </Disclosure>
+
           <Disclosure v-slot="{ open }">
             <DisclosureButton class="flex w-full justify-between px-4 py-2 text-left text-sm font-medium text-gray-900 hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-purple-500 focus-visible:ring-opacity-75">
               <span>Radius</span>
@@ -193,6 +317,13 @@
                   step="1"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary dark:bg-gray-300"
                 />
+
+                <div>
+                  <p class="text-sm font-medium text-gray-700">Search Size</p>
+                  <div class="mt-1">
+                    <input type="number" :value="form.size" @input="updateField('size', $event.target.value)" placeholder="Max" min="0" class="p-1 text-sm border rounded">
+                  </div>
+                </div>
                 
               </div>
             </DisclosurePanel>
@@ -228,6 +359,11 @@ const props = defineProps({
 })
 
 const initialForm = {
+  //Property value
+  value_min: null,
+  value_max: null,
+  assessed_value_min: null,
+  assessed_value_max: null,
   // Property Characteristics fields
   building_size_min: null,
   building_size_max: null,
@@ -236,7 +372,8 @@ const initialForm = {
   year_built_min: null,
   year_built_max: null,
 
-  // Foreclosure & Auction fields
+  // Foreclosure & Liens
+  tax_lien: false,
   foreclosure: false,
   pre_foreclosure: false,
   auction: false,
@@ -254,8 +391,126 @@ const initialForm = {
   absentee_owner: false,
   vacant: false,
 
-  radius: 1
+  // Equity fields
+  estimated_equity: null,
+  equity_operator: null,
+  equity_percent: null,
+  equity_percent_operator: null,
+
+  document_type_code: null,
+ 
+
+  radius: 1,
+  size: null
 };
+
+const documentTypeCodes = [
+  { value: 'NULL', label: 'Unknown or not provided' },
+  { value: 'DTAA', label: 'ASSIGNMENT OF SUB AGREEMENT OF SALE' },
+  { value: 'DTAB', label: 'ASSIGNMENT OF SUB LEASE' },
+  { value: 'DTAC', label: 'ASSIGNMENT OF COMMERCIAL LEASE' },
+  { value: 'DTAD', label: 'ADMINISTRATORS DEED' },
+  { value: 'DTAF', label: 'AFFIDAVIT' },
+  { value: 'DTAG', label: 'AGREEMENT OF SALE' },
+  { value: 'DTAH', label: 'ASSESSOR SALES HISTORY' },
+  { value: 'DTAL', label: 'QUIT CLAIM ARM\'S LENGTH FOR NE STATES' },
+  { value: 'DTAO', label: 'ASSIGNMENT OF DEED OF TRUST' },
+  { value: 'DTAR', label: 'ASSIGNMENT OF AGREEMENT OF SALE' },
+  { value: 'DTAS', label: 'ASSIGNMENT OF DEED' },
+  { value: 'DTAT', label: 'AFFIDAVIT OF TRUST OR TRUST AGGREMENT' },
+  { value: 'DTAU', label: 'ASSIGNMENT OF SUB COMMERCIAL LEASE' },
+  { value: 'DTBD', label: 'BENEFICIARY DEED' },
+  { value: 'DTBK', label: 'BANKRUPTCY' },
+  { value: 'DTBS', label: 'BARGAIN AND SALE DEED' },
+  { value: 'DTCA', label: 'COMMISSIONERS ASSIGNMENT OF LEASE' },
+  { value: 'DTCD', label: 'CONDOMINIUM DEED' },
+  { value: 'DTCE', label: 'COMMITTEE' },
+  { value: 'DTCF', label: 'ONE OF COMMITTEE, STRICT FORECLOSURE, SHERIFF, OR REDEMPTION DEEDS' },
+  { value: 'DTCH', label: 'CASH SALE DEED' },
+  { value: 'DTCL', label: 'COMMERCIAL LEASE' },
+  { value: 'DTCM', label: 'COMMISSIONERS DEED' },
+  { value: 'DTCN', label: 'CANCELLATION OF AGREEMENT OF SALE' },
+  { value: 'DTCO', label: 'CONSERVATORS DEED' },
+  { value: 'DTCP', label: 'CORPORATION DEED' },
+  { value: 'DTCR', label: 'CORRECTION DEED' },
+  { value: 'DTCS', label: 'CONTRACT SALE' },
+  { value: 'DTCT', label: 'CERTIFICATE OF TRANSFER' },
+  { value: 'DTCV', label: 'CONVEYANCE' },
+  { value: 'DTDB', label: 'DEED OF DISTRIBUTION' },
+  { value: 'DTDC', label: 'DECLARATION' },
+  { value: 'DTDD', label: 'TRANSFER ON DEATH DEED' },
+  { value: 'DTDE', label: 'DEED' },
+  { value: 'DTDG', label: 'DEED OF GUARDIAN' },
+  { value: 'DTDJ', label: 'AFFIDAVIT OF DEATH OF JOINT TENANT' },
+  { value: 'DTDL', label: 'DEED IN LIEU OF FORECLOSURE' },
+  { value: 'DTDP', label: 'DUAL PURPOSE DOCUMENT' },
+  { value: 'DTDS', label: 'DISTRESS SALE' },
+  { value: 'DTDT', label: 'AFFIDAVIT OF DEATH' },
+  { value: 'DTDX', label: 'TAX DEED' },
+  { value: 'DTEC', label: 'EXCHANGE' },
+  { value: 'DTES', label: 'LIFE ESTATE' },
+  { value: 'DTEX', label: 'EXECUTORS DEED' },
+  { value: 'DTFC', label: 'FORECLOSURE' },
+  { value: 'DTFD', label: 'FIDUCIARY DEED' },
+  { value: 'DTFP', label: 'CERTIFICATE OF PURCHASE' },
+  { value: 'DTGD', label: 'GRANT DEED' },
+  { value: 'DTGE', label: 'ONE OF CONSERVATOR, EXECUTOR, GUARDIAN, GRANT, TAX COLLECTOR, OR TRUSTEE DEEDS' },
+  { value: 'DTGF', label: 'GIFT DEED' },
+  { value: 'DTGR', label: 'GROUND LEASE' },
+  { value: 'DTID', label: 'INDIVIDUAL DEED' },
+  { value: 'DTIT', label: 'INTRAFAMILY TRANSFER' },
+  { value: 'DTJT', label: 'JOINT TENANCY DEED' },
+  { value: 'DTLA', label: 'LEGAL ACTION/COURT ORDER' },
+  { value: 'DTLC', label: 'LEASEHOLD CONV. WITH AGREEM. OF SALE (FEE PURCHASE)' },
+  { value: 'DTLD', label: 'LAND CONTRACT' },
+  { value: 'DTLE', label: 'LEASE' },
+  { value: 'DTLH', label: 'ASSIGNMENT OF LEASE (LEASEHOLD SALE)' },
+  { value: 'DTLS', label: 'LEASEHOLD CONV. W/AN AGREEMENT OF SALE' },
+  { value: 'DTLT', label: 'LAND COURT' },
+  { value: 'DTLW', label: 'LIMITED WARRANTY DEED' },
+  { value: 'DTMD', label: 'SPECIAL MASTER DEED' },
+  { value: 'DTMF', label: 'MANUF HOUSING' },
+  { value: 'DTMG', label: 'MORTGAGEE' },
+  { value: 'DTML', label: 'MORTGAGE LIEN' },
+  { value: 'DTMN', label: 'MUNICIPAL' },
+  { value: 'DTMO', label: 'LOAN MODIFICATION' },
+  { value: 'DTMX', label: 'LOAN MODIFICATION, CONSOLIDATION AND EXTENSION' },
+  { value: 'DTOT', label: 'OTHER' },
+  { value: 'DTPA', label: 'PUBLIC ACTION' },
+  { value: 'DTPD', label: 'PARTNERSHIP DEED' },
+  { value: 'DTPR', label: 'PERSONAL REPRESENTATIVE DEED' },
+  { value: 'DTQC', label: 'QUIT CLAIM DEED' },
+  { value: 'DTR1', label: 'LOAN 1 (ONLY) IS A REVERSE MORTGAGE' },
+  { value: 'DTR2', label: 'LOAN 2 (ONLY) IS A REVERSE MORTGAGE' },
+  { value: 'DTR3', label: 'LOAN 3 (ONLY) IS A REVERSE MORTGAGE' },
+  { value: 'DTR4', label: 'LOANS 1 AND 2 ARE BOTH REVERSE MORTGAGES' },
+  { value: 'DTR5', label: 'LOANS 1 AND 3 ARE BOTH REVERSE MORTGAGES' },
+  { value: 'DTR6', label: 'LOANS 1, 2 AND 3 ARE ALL REVERSE MORTGAGES' },
+  { value: 'DTR7', label: 'LOANS 2 AND 3 ARE BOTH REVERSE MORTGAGES' },
+  { value: 'DTRA', label: 'RELEASE/SATIS. OF AGREM. OF SALE (FEE PROPERTY)' },
+  { value: 'DTRC', label: 'RECEIVERS DEED' },
+  { value: 'DTRD', label: 'REDEMPTION DEED' },
+  { value: 'DTRE', label: 'COMBINE TABLE REO DEED' },
+  { value: 'DTRF', label: 'REFEREE\'S DEED - USED TO TRANSFER PROPERTY PURSUANT TO A FORECLOSURE SALE IN NEW YORK COUNTIES' },
+  { value: 'DTRL', label: 'RELEASE/SATIS. OF AGREM. OF SALE (LEASEHOLD)' },
+  { value: 'DTRR', label: 'RE-RECORDED DOCUMENT' },
+  { value: 'DTRS', label: 'REO SALE (REO OUT)' },
+  { value: 'DTSA', label: 'SUB AGREEMENT OF SALE' },
+  { value: 'DTSC', label: 'SUB COMMERCIAL LEASE' },
+  { value: 'DTSD', label: 'SHERIFFS DEED' },
+  { value: 'DTSL', label: 'SUB LEASE' },
+  { value: 'DTSS', label: 'ASSUMPTION DEED' },
+  { value: 'DTST', label: 'AFFIDAVIT DEATH OF TRUSTEE/SUCCESSOR TRUSTEE' },
+  { value: 'DTSV', label: 'SURVIVORSHIP DEED' },
+  { value: 'DTSW', label: 'SPECIAL WARRANTY DEED' },
+  { value: 'DTTC', label: 'TAX COLLECTOR' },
+  { value: 'DTTD', label: 'TRUSTEES DEED' },
+  { value: 'DTTR', label: 'DEED OF TRUST' },
+  { value: 'DTVL', label: 'VENDERS LIEN' },
+  { value: 'DTWD', label: 'WARRANTY DEED' },
+  { value: 'DTXX', label: 'TRANSACTION HISTORY RECORD' },
+  { value: 'XXXX', label: 'Unknown' }
+];
 
 const localForm = reactive({...initialForm});
 const touchedFields = ref(new Set());
@@ -285,7 +540,7 @@ watch(() => props.form, (newForm) => {
 watch(localForm, (newValue) => {
   const changedFields = {};
   touchedFields.value.forEach(key => {
-    if (newValue[key] !== null && newValue[key] !== '' && newValue[key] !== false || key === 'radius') {
+    if (newValue[key] !== null && newValue[key] !== '') {
       changedFields[key] = newValue[key];
     }
   });
