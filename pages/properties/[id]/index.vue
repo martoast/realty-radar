@@ -36,7 +36,41 @@
               </div>
             </div>
 
-            <p class="mt-6 text-gray-500">{{ zillowData.description }}</p>
+            <!-- <p class="mt-6 text-gray-500">{{ zillowData.description }}</p> -->
+
+            <dl class="grid gap-x-4 gap-y-8 grid-cols-2 mt-6">
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Property type</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyType }}</dd>
+                    </div>
+
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Last sale</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.lastSale.saleDate }}</dd>
+                    </div>
+
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Equity</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.ownerInfo.equity) ?? formatCurrency(propertyDetail.estimatedEquity) }}</dd>
+                    </div>          
+                    
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Equity percent</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.equityPercent ?? 'N/A' }}%</dd>
+                    </div>
+
+                    
+                    
+                   
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Estimated value</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.zestimate) ?? 'N/A'}}</dd>
+                    </div>
+                    <div class="sm:col-span-1">
+                      <dt class="text-sm font-medium text-gray-500">Rent</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.rentZestimate) ?? 'N/A'}}</dd>
+                    </div>
+            </dl>
 
             
 
@@ -46,51 +80,6 @@
               </a>
               <button type="button" class="flex w-full items-center justify-center rounded-md border border-transparent bg-indigo-50 px-8 py-3 text-base font-medium text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-gray-50">Contact Agent</button>
             </div>
-
-            
-
-            <div class="mt-10 border-t border-gray-200 pt-10">
-              <h3 class="text-xl font-semibold text-gray-900 mb-6">Comparable Properties</h3>
-              <div class="mt-16 space-y-20 lg:space-y-20">
-                <article v-for="comp in displayedComps" :key="comp.id" class="relative isolate flex flex-col gap-8 lg:flex-row">
-                  <div class="relative aspect-[16/9] sm:aspect-[2/1] lg:aspect-square lg:w-64 lg:shrink-0">
-                    <img :src="`https://maps.googleapis.com/maps/api/staticmap?center=${comp.latitude},${comp.longitude}&zoom=15&size=400x400&key=` + googlemapsApiKey" alt="Property Map" class="absolute inset-0 h-full w-full rounded-2xl bg-gray-50 object-cover" />
-                    <div class="absolute inset-0 rounded-2xl ring-1 ring-inset ring-gray-900/10" />
-                  </div>
-                  <div>
-                    <div class="flex items-center gap-x-4 text-xs">
-                      <time :datetime="comp.lastSaleDate" class="text-gray-500">{{ formatDate(comp.lastSaleDate) }}</time>
-                      <span class="relative z-10 rounded-full bg-gray-50 px-3 py-1.5 font-medium text-gray-600">{{ comp.propertyType }}</span>
-                    </div>
-                    <div class="group relative max-w-xl">
-                      <a :href="'/properties/' + comp.propertyId">
-                        <h3 class="mt-3 text-lg font-semibold leading-6 text-gray-900 group-hover:text-gray-600">
-                        {{ comp.address.address }}, {{ comp.address.city }}, {{ comp.address.state }} {{ comp.address.zip }}
-                      </h3>
-                    </a>
-                      
-                      <p class="mt-5 text-sm leading-6 text-gray-600">
-                        {{ removeTrailingZeros(comp.bedrooms) }} beds | {{ removeTrailingZeros(comp.bathrooms) }} baths | {{ comp.squareFeet }} sqft
-                      </p>
-                    </div>
-                    <div class="mt-6 flex border-t border-gray-900/5 pt-6">
-                      <div class="relative flex items-center gap-x-4">
-                        <div class="text-sm leading-6">
-                          <p class="font-semibold text-gray-900">Estimated Value</p>
-                          <p class="text-gray-600">{{ formatCurrency(comp.estimatedValue) }}</p>
-                        </div>
-                      </div>
-                      <div class="relative flex items-center gap-x-4 ml-6">
-                        <div class="text-sm leading-6">
-                          <p class="font-semibold text-gray-900">Last Sale Amount</p>
-                          <p class="text-gray-600">{{ formatCurrency(comp.lastSaleAmount) }}</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              </div>
-            </div>
           </div>
 
           <div class="mx-auto mt-16 w-full max-w-2xl lg:col-span-4 lg:mt-0 lg:max-w-none">
@@ -99,7 +88,13 @@
                 <TabList class="-mb-px flex space-x-8 overflow-x-auto">
                   <Tab v-slot="{ selected }">
                     <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
-                      Overview
+                      Owner info
+                    </button>
+                  </Tab>
+                  
+                  <Tab v-slot="{ selected }">
+                    <button :class="[selected ? 'border-indigo-600 text-indigo-600' : 'border-transparent text-gray-700 hover:border-gray-300 hover:text-gray-800', 'whitespace-nowrap border-b-2 py-6 text-sm font-medium']">
+                      Comps
                     </button>
                   </Tab>
                   <Tab v-slot="{ selected }">
@@ -125,42 +120,39 @@
                 </TabList>
               </div>
               <TabPanels>
+
                 <TabPanel class="pt-10">
-                  <h3 class="sr-only">Overview</h3>
+                  <h3 class="sr-only">Owner Information</h3>
                   <dl class="grid grid-cols-1 gap-x-4 gap-y-8 sm:grid-cols-2">
                     <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Property Type</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyType }}</dd>
+                      <dt class="text-sm font-medium text-gray-500">Owner 1</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.ownerInfo.owner1FullName }} ({{ propertyDetail.ownerInfo.owner1Type }})</dd>
                     </div>
                     <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Bedrooms</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.bedrooms }}</dd>
+                      <dt class="text-sm font-medium text-gray-500">Owner 2</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.ownerInfo.owner2FullName }} ({{ propertyDetail.ownerInfo.owner2Type }})</dd>
                     </div>
                     <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Bathrooms</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.bathrooms }}</dd>
+                      <dt class="text-sm font-medium text-gray-500">Ownership Length</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.ownerInfo.ownershipLength }} years</dd>
                     </div>
                     <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Year Built</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.propertyInfo.yearBuilt ?? 'N/A' }}</dd>
+                      <dt class="text-sm font-medium text-gray-500">Estimated Equity</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(propertyDetail.ownerInfo.equity) }}</dd>
                     </div>
                     <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Lot Size</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ formatNumber(propertyDetail.propertyInfo.lotSquareFeet) ?? 'N/A' }} sqft</dd>
+                      <dt class="text-sm font-medium text-gray-500">Equity Percent</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.equityPercent ?? 'N/A' }}%</dd>
                     </div>
-                    <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Living Area</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ formatNumber(propertyDetail.propertyInfo.livingSquareFeet) ?? 'N/A' }} sqft</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Zestimate</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.zestimate) ?? 'N/A'}}</dd>
-                    </div>
-                    <div class="sm:col-span-1">
-                      <dt class="text-sm font-medium text-gray-500">Rent Zestimate</dt>
-                      <dd class="mt-1 text-sm text-gray-900">{{ formatCurrency(zillowData.rentZestimate) ?? 'N/A'}}</dd>
+                    <div class="sm:col-span-2">
+                      <dt class="text-sm font-medium text-gray-500">Mailing Address</dt>
+                      <dd class="mt-1 text-sm text-gray-900">{{ propertyDetail.ownerInfo.mailAddress.label }}</dd>
                     </div>
                   </dl>
+                </TabPanel>
+                
+                <TabPanel class="pt-10">
+                  <ComparableProperties :comps="compsData" />
                 </TabPanel>
                 <TabPanel class="pt-10">
                   <h3 class="sr-only">Lot Info</h3>
@@ -307,6 +299,7 @@ const router = useRouter()
 const propertyDetail = ref(null)
 const error = ref(null)
 const zillowData = ref(null)
+const compsData = ref([])
 const nearbyHospitals = ref([])
 
 const fetchPropertyDetail = async () => {
@@ -324,10 +317,50 @@ const fetchPropertyDetail = async () => {
   }
 }
 
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
 const triggerApiRequests = async () => {
   if (propertyDetail.value?.propertyInfo?.address) {
     const fullAddress = propertyDetail.value.propertyInfo.address.label
-    await fetchZillowData(fullAddress)
+    console.log(propertyDetail.value.comps)
+
+    // Limit to first 3 comps
+    const limitedComps = propertyDetail.value.comps.slice(0, 1)
+
+    // Fetch data for comps sequentially with a delay between each request
+    compsData.value = [];
+    for (const comp of limitedComps) {
+      try {
+        let compData = await fetchZillowData(comp.address.address)
+        
+        compsData.value.push({
+          ...comp,
+          imgSrc: compData.imgSrc || 'https://via.placeholder.com/400x300',
+          zillowPrice: compData.price,
+          zillowZestimate: compData.zestimate,
+          zillowRentZestimate: compData.rentZestimate,
+        });
+
+        // Wait for 1 second before the next request
+        await delay(1000);
+      } catch (error) {
+        console.error(`Error fetching Zillow data for comp ${comp.address.address}:`, error)
+        compsData.value.push({
+          ...comp,
+          imgSrc: 'https://via.placeholder.com/400x300',
+          zillowPrice: 'N/A',
+          zillowZestimate: 'N/A',
+          zillowRentZestimate: 'N/A',
+        });
+      }
+    }
+
+    // Wait for 1 second before fetching the main property data
+    await delay(1000);
+    zillowData.value = await fetchZillowData(fullAddress)
+
+    // Wait for 1 second before fetching nearby places
+    await delay(1000);
     await fetchNearbyPlaces(
       propertyDetail.value.propertyInfo.latitude,
       propertyDetail.value.propertyInfo.longitude,
@@ -344,8 +377,7 @@ const fetchZillowData = async (address) => {
         'X-RapidAPI-Host': 'zillow-com1.p.rapidapi.com'
       },
     })
-    zillowData.value = response
-    console.log(zillowData.value)
+    return response
   } catch (err) {
     console.error('Error fetching Zillow data:', err)
   }
@@ -403,7 +435,7 @@ const goBack = () => {
   router.back()
 }
 
-const displayedComps = computed(() => propertyDetail.value?.comps.slice(0, 5) || [])
+const displayedComps = computed(() => compsData.value.slice(0, 1) || [])
 
 
 </script>
