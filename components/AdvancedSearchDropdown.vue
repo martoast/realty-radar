@@ -312,9 +312,9 @@
                 <input
                   v-model="form.radius"
                   type="range"
-                  min="1"
+                  min="0.1"
                   max="10"
-                  step="1"
+                  step="0.1"
                   class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-primary dark:bg-gray-300"
                 />
 

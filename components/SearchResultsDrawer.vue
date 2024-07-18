@@ -1,7 +1,6 @@
 <template>
-  <Teleport to="body">
     <Transition name="slide">
-      <div v-if="isOpen" class="fixed inset-y-0 right-0 max-w-full flex z-50">
+      <div v-if="isOpen" class="inset-y-0 right-0 max-w-full flex z-50">
         <div class="w-screen max-w-md">
           <div class="h-full flex flex-col bg-white shadow-xl overflow-y-scroll">
             <div class="p-6">
@@ -103,7 +102,6 @@
         </div>
       </div>
     </Transition>
-  </Teleport>
 </template>
   
   <script setup>

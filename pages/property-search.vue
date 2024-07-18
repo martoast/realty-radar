@@ -51,16 +51,30 @@
           </button>
         </div>
       </div>
+      <div class="flex-grow flex overflow-hidden relative">
       <div id="map" class="flex-grow"></div>
+      <!-- New Toggle Button -->
+      <button
+        v-if="searchResults && !drawerOpen"
+        @click="toggleDrawer"
+        class="absolute top-4 right-4 bg-white p-2 rounded-md shadow-md z-10 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+        </svg>
+      </button>
       <!-- Search Results Drawer -->
-    <SearchResultsDrawer
-      :is-open="drawerOpen"
-      :search-results="searchResults"
-      :current-page="currentPage"
-      :results-per-page="resultsPerPage"
-      @close="closeDrawer"
-      @update-page="updatePage"
-    />
+      <SearchResultsDrawer
+        :is-open="drawerOpen"
+        :search-results="searchResults"
+        :current-page="currentPage"
+        :results-per-page="resultsPerPage"
+        @close="closeDrawer"
+        @update-page="updatePage"
+        class="flex-shrink-0 transition-all duration-300 ease-in-out"
+        :class="{ 'w-0': !drawerOpen, 'w-screen max-w-md': drawerOpen }"
+      />
+    </div>
     </div>
   </template>
   
@@ -148,6 +162,11 @@ const drawerOpen = ref(false);
 const closeDrawer = () => {
   drawerOpen.value = false
 }
+
+const toggleDrawer = () => {
+  drawerOpen.value = !drawerOpen.value;
+};
+
 
 const updatePage = (newPage) => {
   currentPage.value = newPage
